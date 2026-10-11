@@ -33,21 +33,9 @@ function formatDate(locale: string, iso: string | null): string {
  */
 export function FirmwareCard({ snapshot }: { snapshot: ControlSnapshot }): ReactNode {
   const status = snapshot.status;
-  if (!status) return null;
   const locale = snapshot.preferences.locale;
 
-  // HID identity ("046d_xxxx") lets generated manifest entries match by
-  // interfaceId instead of name guessing; null falls back to name matching.
-  const hid = control.getActiveDevice();
-  const ref = {
-    brand: status.brand,
-    name: status.name,
-    modelId: status.modelId ?? null,
-    firmware: status.firmware ?? [],
-    interfaceId: hid ? (hid.vendorId.toString(16).padStart(4, '0') + '_' + hid.productId.toString(16).padStart(4, '0')) : null,
-  };
-  const deviceKey = dismissKeyFor(ref);
-
+  // Hooks run on every render, so they must precede the no-device bail below.
   const [manifest, setManifest] = useState<FirmwareManifest | null>(null);
   const [manifestDate, setManifestDate] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
@@ -84,6 +72,20 @@ export function FirmwareCard({ snapshot }: { snapshot: ControlSnapshot }): React
       setChecking(false);
     }
   }
+
+  if (!status) return null;
+
+  // HID identity ("046d_xxxx") lets generated manifest entries match by
+  // interfaceId instead of name guessing; null falls back to name matching.
+  const hid = control.getActiveDevice();
+  const ref = {
+    brand: status.brand,
+    name: status.name,
+    modelId: status.modelId ?? null,
+    firmware: status.firmware ?? [],
+    interfaceId: hid ? (hid.vendorId.toString(16).padStart(4, '0') + '_' + hid.productId.toString(16).padStart(4, '0')) : null,
+  };
+  const deviceKey = dismissKeyFor(ref);
 
   // Re-read dismissals after a Later click (same render pass otherwise).
   void dismissTick;

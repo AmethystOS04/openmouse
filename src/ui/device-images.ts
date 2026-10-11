@@ -20,7 +20,22 @@
  * how to upload new art.
  */
 
+const filenameCache = new Map<string, string>();
+
+/**
+ * Memoized wrapper: the resolver is a pure function of the display name and
+ * evaluates a long regex chain, so repeated renders of the device list reuse
+ * the result instead of recompiling every pattern.
+ */
 function resolveDeviceImageFilename(_device: HIDDevice | null | undefined, displayName = ""): string {
+  const cached = filenameCache.get(displayName);
+  if (cached !== undefined) return cached;
+  const resolved = computeDeviceImageFilename(displayName);
+  filenameCache.set(displayName, resolved);
+  return resolved;
+}
+
+function computeDeviceImageFilename(displayName: string): string {
   // Lightspeed receivers are shared product IDs, so paired G502 X variants
   // must use the friendly name read from the mouse itself.
   if (/g502\s*x\s*plus/i.test(displayName)) return "logitech-g502-x-plus.png";

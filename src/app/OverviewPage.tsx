@@ -900,17 +900,23 @@ export function OverviewPage({
   const showingDeviceDashboard = status !== null
     && (snapshot.deviceView === "device" || snapshot.previewMode !== null);
 
+  // The tablist renders `profiles` in its own nav slot at the end, so arrow-key
+  // navigation has to follow that visible order rather than WORKSPACE_TAB_ORDER.
+  const visibleTabs: readonly WorkspaceTab[] = tabs.includes("profiles")
+    ? [...tabs.filter((tab) => tab !== "profiles"), "profiles"]
+    : [...tabs];
+
   const onTabKey = (event: KeyboardEvent<HTMLButtonElement>, current: WorkspaceTab): void => {
-    const index = tabs.indexOf(current);
+    const index = visibleTabs.indexOf(current);
     let next: number;
-    if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
-    else if (event.key === "ArrowLeft") next = (index - 1 + tabs.length) % tabs.length;
+    if (event.key === "ArrowRight") next = (index + 1) % visibleTabs.length;
+    else if (event.key === "ArrowLeft") next = (index - 1 + visibleTabs.length) % visibleTabs.length;
     else if (event.key === "Home") next = 0;
-    else if (event.key === "End") next = tabs.length - 1;
+    else if (event.key === "End") next = visibleTabs.length - 1;
     else return;
     event.preventDefault();
-    control.setWorkspaceTab(tabs[next]);
-    const button = document.querySelector<HTMLButtonElement>(`#workspace-tab-${tabs[next]}`);
+    control.setWorkspaceTab(visibleTabs[next]!);
+    const button = document.querySelector<HTMLButtonElement>(`#workspace-tab-${visibleTabs[next]}`);
     button?.focus();
   };
 

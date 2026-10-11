@@ -281,7 +281,11 @@ function readCache(): ManifestCache | null {
   try {
     const raw = localStorage.getItem(MANIFEST_CACHE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as ManifestCache;
+    const parsed = JSON.parse(raw) as Partial<ManifestCache>;
+    // A partial or corrupt entry must not be trusted as a manifest: it would
+    // throw later in matchManifestEntry during render.
+    if (!isManifest(parsed.manifest) || typeof parsed.fetchedAt !== "number") return null;
+    return { fetchedAt: parsed.fetchedAt, manifest: parsed.manifest };
   } catch {
     return null;
   }

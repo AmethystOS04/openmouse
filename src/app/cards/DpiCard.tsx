@@ -410,7 +410,6 @@ function DpiStageEditor({
 
 export function SlotLiftOffPanel({ snapshot }: { snapshot: ControlSnapshot }): ReactNode {
   const status = snapshot.status;
-  if (!status) return null;
   const locale = snapshot.preferences.locale;
   const stages = snapshot.dpiSlotPlan?.stages ?? [];
   const locked = snapshot.profile.slotsLocked;
@@ -430,6 +429,9 @@ export function SlotLiftOffPanel({ snapshot }: { snapshot: ControlSnapshot }): R
       document.removeEventListener("keydown", key);
     };
   }, [openMenu]);
+
+  // Hooks above must run every render; safe to bail once they have.
+  if (!status) return null;
 
   return (
     <div id="host-lod-row">
