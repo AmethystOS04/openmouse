@@ -880,7 +880,12 @@ export function IncottCard({ snapshot }: { snapshot: ControlSnapshot }): ReactNo
               max={255}
               step={1}
               value={interval}
-              onChange={(event) => control.applyIncottFireKey(times, Number(event.currentTarget.value))}
+              onChange={(event) => {
+                const next = Number(event.currentTarget.value);
+                if (Number.isFinite(next)) {
+                  control.applyIncottFireKey(times, Math.min(255, Math.max(0, Math.round(next))));
+                }
+              }}
             />
           </label>
         </>
@@ -951,8 +956,9 @@ export function FinalmouseCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
 
 function tmrSidesDiffer(tmr: NonNullable<ReturnType<typeof slxTmr>>): boolean {
   return tmr.modeL !== tmr.modeR
-    || JSON.stringify([tmr.relL, tmr.thrL, tmr.hystL])
-      !== JSON.stringify([tmr.relR, tmr.thrR, tmr.hystR]);
+    || tmr.relL !== tmr.relR
+    || tmr.thrL !== tmr.thrR
+    || tmr.hystL !== tmr.hystR;
 }
 
 function TmrSideControl({ snapshot, side, both }: {
@@ -2283,9 +2289,14 @@ export function WallhackMacroCard({ snapshot }: { snapshot: ControlSnapshot }): 
     }
   }, [capable, profiles, snapshot.wallhackMacrosLoading, snapshot.wallhackMacrosError]);
 
+  // Reset the draft only when the device value for this slot actually changes,
+  // not on every emit. The controller re-clones wallhackMacros on each
+  // snapshot, so keying the effect on that array reference would throw away
+  // unsaved step edits whenever any background refresh or toast fires.
+  const profilesSignature = JSON.stringify(profiles?.[slot] ?? null);
   useEffect(() => {
     setDraft(profiles?.[slot]?.map((step) => ({ ...step, event: { ...step.event } })) ?? []);
-  }, [profiles, slot]);
+  }, [profilesSignature, slot]);
 
   if (!status || !capable) return null;
 

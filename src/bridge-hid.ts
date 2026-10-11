@@ -232,7 +232,15 @@ class BridgeHidDevice implements HIDDevice {
   /** Called by the client when Bridge forwards a report for this device. */
   deliver(reportId: number, data: number[]): void {
     const event = new BridgeInputReportEvent(this, reportId, new DataView(Uint8Array.from(data).buffer));
-    for (const listener of this.#listeners) listener(event);
+    for (const listener of [...this.#listeners]) {
+      try {
+        listener(event);
+      } catch (error) {
+        // One throwing listener must not stop the rest from seeing the report
+        // or escape into the socket's message handler.
+        bridgeLog("warn", "input report listener failed", { detail: errorMessage(error) });
+      }
+    }
   }
 
   /** Bridge went away: the handle is dead, whatever the page still holds. */

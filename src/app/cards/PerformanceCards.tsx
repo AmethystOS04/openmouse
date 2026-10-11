@@ -38,7 +38,6 @@ export function PollingCard({ snapshot }: { snapshot: ControlSnapshot }): ReactN
 
   const advertisedRates = (status.supportedPollingRates ?? RATE_STEPS_HZ)
     .filter((rate) => !(snapshot.traits.eggControls && rate < 1000))
-    .slice()
     .sort((a, b) => a - b);
 
   const note = perProfile && rates

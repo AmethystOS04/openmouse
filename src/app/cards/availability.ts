@@ -108,7 +108,7 @@ const NOTHING: CardAvailability = {
   advancedHost: false,
 };
 
-export function cardAvailability(snapshot: ControlSnapshot): CardAvailability {
+function computeCardAvailability(snapshot: ControlSnapshot): CardAvailability {
   const status = snapshot.status;
   if (!status) return NOTHING;
   const ui = status.ui;
@@ -238,4 +238,19 @@ export function cardAvailability(snapshot: ControlSnapshot): CardAvailability {
     mxMasterButtons: traits.logitech && (snapshot.buttons?.length ?? 0) > 0,
     pulsarPro: host && isPulsarProProtocol(status),
   };
+}
+
+let lastAvailability: { snapshot: ControlSnapshot; value: CardAvailability } | null = null;
+
+/**
+ * Availability of every card for this snapshot. Several components in one
+ * render pass (OverviewPage, OverviewContent, Workspace) ask for the same
+ * snapshot, so the result is memoized by identity — the snapshot object is
+ * replaced wholesale on every emit, so a stale entry can never be reused.
+ */
+export function cardAvailability(snapshot: ControlSnapshot): CardAvailability {
+  if (lastAvailability?.snapshot === snapshot) return lastAvailability.value;
+  const value = computeCardAvailability(snapshot);
+  lastAvailability = { snapshot, value };
+  return value;
 }

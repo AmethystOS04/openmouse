@@ -892,7 +892,13 @@ export function importM2NexProfiles(text: string): void {
     emit();
     return;
   }
-  const profiles = parseM2NexProfileImport(raw, m2nexProfiles.length);
+  let profiles: M2NexProfile[] | null;
+  try {
+    profiles = parseM2NexProfileImport(raw, m2nexProfiles.length);
+  } catch {
+    // A crafted or corrupt file must report, not throw out of this handler.
+    profiles = null;
+  }
   if (!profiles) {
     setReadStatus(`Import requires exactly ${m2nexProfiles.length} valid profile slots.`);
     emit();
@@ -1894,13 +1900,13 @@ export function applyButtonMapping(controlId: number, targetControlId: number): 
 async function writeStagedButtonMappings(): Promise<void> {
   const client = logitechClient();
   if (!client) return;
-  try {
-    for (const [controlId, targetControlId] of stagedButtonMappings) {
-      buttons = await client.setButtonMapping(controlId, targetControlId);
-    }
-  } finally {
-    stagedButtonMappings.clear();
+  for (const [controlId, targetControlId] of stagedButtonMappings) {
+    buttons = await client.setButtonMapping(controlId, targetControlId);
   }
+  // Clear only after every mapping was sent. A throw part-way leaves the map
+  // intact so a retry re-sends the batch instead of letting flashPendingChanges
+  // drop the staged changes as if they had been written.
+  stagedButtonMappings.clear();
 }
 
 /**
@@ -2652,7 +2658,18 @@ function sidebarEntries(devices: HIDDevice[]): SidebarDevice[] {
 }
 
 async function refreshSidebar(devices?: HIDDevice[]): Promise<void> {
-  const all = devices ?? await navigator.hid?.getDevices() ?? [];
+  let all: HIDDevice[];
+  if (devices) {
+    all = devices;
+  } else {
+    try {
+      all = await navigator.hid?.getDevices() ?? [];
+    } catch {
+      // A wedged transport can reject enumeration. Keep the last known list
+      // rather than surfacing an unhandled rejection from a fire-and-forget call.
+      return;
+    }
+  }
   sidebarDevices = sidebarEntries(all);
   emit();
 }
@@ -2812,11 +2829,11 @@ function clearActiveClients(): void {
 async function probeReceiverFirmware(client: SupportedClient, connectionType: string | undefined): Promise<void> {
   latestReceiverFirmware = null;
   if (!(client instanceof LogitechHidppClient)) {
-    console.log('[firmware] receiver probe skipped: not a Logitech client');
+    if (import.meta.env?.DEV === true) console.log('[firmware] receiver probe skipped: not a Logitech client');
     return;
   }
   if (connectionType !== "Wireless") {
-    console.log('[firmware] receiver probe skipped: connection is ' + String(connectionType));
+    if (import.meta.env?.DEV === true) console.log('[firmware] receiver probe skipped: connection is ' + String(connectionType));
     return;
   }
   const hid = client.device;
@@ -2827,16 +2844,22 @@ async function probeReceiverFirmware(client: SupportedClient, connectionType: st
     window.clearInterval(refreshTimer);
     refreshTimer = null;
   }
-  void readReceiverFromSiblings(hid).then((found) => {
-    if (activeDevice !== hid) return;
-    try {
-      latestReceiverFirmware = found;
-      emit();
-    } catch {
-      // Identity changed mid-probe; drop it silently.
-    }
-    startAutomaticRefresh();
-  }).catch(() => undefined);
+  void readReceiverFromSiblings(hid)
+    .then((found) => {
+      if (activeDevice !== hid) return;
+      try {
+        latestReceiverFirmware = found;
+        emit();
+      } catch {
+        // Identity changed mid-probe; drop it silently.
+      }
+    })
+    .catch(() => undefined)
+    .finally(() => {
+      // Resume polling for the still-active device even when the probe
+      // rejected, or a failed probe would leave the status poll stopped.
+      if (activeDevice === hid) startAutomaticRefresh();
+    });
 }
 
 /**
@@ -2873,8 +2896,10 @@ async function sweepReceiverRegister(
     for (const index of [0, 1]) {
       const attempt = await readReceiverRegisterF1(device, verbose, 0xff, [mcu, index, 0]);
       if (attempt.ok) {
-        console.log('[firmware] receiver probe: HIT mcu=' + mcu + ' index=' + index +
-          ' raw=' + attempt.raw.map((b) => b.toString(16).padStart(2, '0')).join(' '));
+        if (import.meta.env?.DEV === true) {
+          console.log('[firmware] receiver probe: HIT mcu=' + mcu + ' index=' + index +
+            ' raw=' + attempt.raw.map((b) => b.toString(16).padStart(2, '0')).join(' '));
+        }
         mcus.push({ mcu, version: attempt.version, raw: attempt.raw });
         break;
       }
@@ -2899,7 +2924,7 @@ async function readReceiverFromSiblings(
   }
   for (const target of targets) {
     const tag = target.vendorId.toString(16) + ':' + target.productId.toString(16);
-    if (target !== active) console.log('[firmware] receiver probe: trying sibling interface ' + tag);
+    if (target !== active && import.meta.env?.DEV === true) console.log('[firmware] receiver probe: trying sibling interface ' + tag);
     let openedHere = false;
     try {
       if (!target.opened) {
@@ -2935,7 +2960,7 @@ async function readReceiverRegisterF1(
 ): Promise<RegisterRead> {
   const tag = device.vendorId.toString(16) + ':' + device.productId.toString(16) +
     ' dev=' + deviceIndex.toString(16) + ' params=[' + params.join(',') + ']';
-  if (verbose) console.log('[firmware] receiver probe: sending 0xF1 ' + tag);
+  if (verbose && import.meta.env?.DEV === true) console.log('[firmware] receiver probe: sending 0xF1 ' + tag);
   type Outcome = { kind: 'value'; data: Uint8Array } | { kind: 'error'; code: number | null } | { kind: 'timeout' };
   const reply: Outcome = await new Promise((resolve) => {
     const cleanup = (): void => {
@@ -2949,7 +2974,9 @@ async function readReceiverRegisterF1(
     const onReport = (event: HIDInputReportEvent): void => {
       if (event.reportId !== 0x10) return;
       const data = new Uint8Array(event.data.buffer.slice(event.data.byteOffset, event.data.byteOffset + event.data.byteLength));
-      console.log('[firmware] rx reg (' + data.length + 'b) ' + [...data].map((b) => b.toString(16).padStart(2, '0')).join(' '));
+      if (import.meta.env?.DEV === true) {
+        console.log('[firmware] rx reg (' + data.length + 'b) ' + [...data].map((b) => b.toString(16).padStart(2, '0')).join(' '));
+      }
       if (data[0] === deviceIndex && data[1] === 0x81 && data[2] === 0xf1) {
         cleanup();
         resolve({ kind: 'value', data });
@@ -2965,11 +2992,11 @@ async function readReceiverRegisterF1(
     });
   });
   if (reply.kind === 'timeout') {
-    console.log('[firmware] receiver probe: no reply (timeout or send failed)');
+    if (import.meta.env?.DEV === true) console.log('[firmware] receiver probe: no reply (timeout or send failed)');
     return { ok: false as const, code: null };
   }
   if (reply.kind === 'error') {
-    console.log('[firmware] receiver probe: register error ' + String(reply.code));
+    if (import.meta.env?.DEV === true) console.log('[firmware] receiver probe: register error ' + String(reply.code));
     return { ok: false as const, code: reply.code };
   }
   if (reply.kind !== 'value') return { ok: false as const, code: null };
@@ -3015,47 +3042,57 @@ async function activateClientNow(client: SupportedClient): Promise<void> {
   active = client;
   activeWorkspaceTab = "overview";
 
-  if (isEggWeClient(client)) await eggWePrepare(client);
-  if (NEEDS_OPEN.some((cls) => client instanceof cls)) await (client as { open(): Promise<unknown> }).open();
+  try {
+    if (isEggWeClient(client)) await eggWePrepare(client);
+    if (NEEDS_OPEN.some((cls) => client instanceof cls)) await (client as { open(): Promise<unknown> }).open();
 
-  if (pulsarClient() !== null) {
-    await showPulsarExplorer(client as PulsarClient);
-  } else {
-    const status = await client.readStatus();
-    dpiOptions = await client.getDpiOptions();
-    const dm = dmClient();
-    const keychron = keychronNapeClient();
-    if (dm) lastSleepSeconds = status.sleepTimeout ?? dm.getSleepOptions()[0] ?? 60;
-    else if (keychron) {
-      lastSleepSeconds = status.sleepTimeout ?? keychron.getSleepOptions()[0] ?? 60;
+    if (pulsarClient() !== null) {
+      await showPulsarExplorer(client as PulsarClient);
+    } else {
+      const status = await client.readStatus();
+      dpiOptions = await client.getDpiOptions();
+      const dm = dmClient();
+      const keychron = keychronNapeClient();
+      if (dm) lastSleepSeconds = status.sleepTimeout ?? dm.getSleepOptions()[0] ?? 60;
+      else if (keychron) {
+        lastSleepSeconds = status.sleepTimeout ?? keychron.getSleepOptions()[0] ?? 60;
+      }
+      deviceStatuses.set(client.device, status);
+      // Optional setters/getters are runtime capabilities of the selected
+      // client. Populate them before rendering so controls such as RAWM angle
+      // tuning are editable on the first status snapshot.
+      capabilities = readCapabilities();
+      applyStatus(status);
+      if (isNoirProfileDevice(status) && m2nexProfiles === null) seedM2NexProfiles(status);
+      if (!isNoirProfileDevice(status)) {
+        m2nexProfiles = null;
+        activeM2NexProfile = 0;
+        m2nexProfileDirty = false;
+      }
+      await readButtons();
+      await probeReceiverFirmware(client, status.connectionType);
+      await loadNapeKeymap(status.napeLayer ?? editedNapeLayer ?? 1);
+      if (dm) {
+        await dm.startNotifications(() => {
+          void refreshStatus();
+        }).catch(() => false);
+      }
     }
-    deviceStatuses.set(client.device, status);
-    // Optional setters/getters are runtime capabilities of the selected
-    // client. Populate them before rendering so controls such as RAWM angle
-    // tuning are editable on the first status snapshot.
-    capabilities = readCapabilities();
-    applyStatus(status);
-    if (isNoirProfileDevice(status) && m2nexProfiles === null) seedM2NexProfiles(status);
-    if (!isNoirProfileDevice(status)) {
-      m2nexProfiles = null;
-      activeM2NexProfile = 0;
-      m2nexProfileDirty = false;
+
+    await refreshSidebar();
+    rememberActiveDevice(client.device);
+    startAutomaticRefresh();
+    setConnectionButtons(false, "Add device");
+    pushToast("success", st("ctl.connectedTo", { name: statusNameForClient(client) }));
+  } catch (error) {
+    // A failed activation must not leave the closed client as the active one:
+    // that hides the empty state and blocks reconnectAuthorizedDevice.
+    if (active === client) {
+      showDisconnectedState();
+      emit();
     }
-    await readButtons();
-    await probeReceiverFirmware(client, status.connectionType);
-    await loadNapeKeymap(status.napeLayer ?? editedNapeLayer ?? 1);
-    if (dm) {
-      await dm.startNotifications(() => {
-        void refreshStatus();
-      }).catch(() => false);
-    }
+    throw error;
   }
-
-  await refreshSidebar();
-  rememberActiveDevice(client.device);
-  startAutomaticRefresh();
-  setConnectionButtons(false, "Add device");
-  pushToast("success", st("ctl.connectedTo", { name: statusNameForClient(client) }));
 }
 
 function activateClient(client: SupportedClient): Promise<void> {
@@ -4362,30 +4399,30 @@ function applyNapeAssignmentValue(
 
 async function writeStagedNapeAssignments(): Promise<void> {
   const edits = [...stagedNapeAssignments.values()];
-  try {
-    if (isAnyPreview) {
-      for (const edit of edits) patchNapeKeymap(edit.layer, edit.control, edit.keycode);
-      return;
-    }
-    const client = keychronNapeClient();
-    if (!client) return;
-    for (const edit of edits) {
-      if (edit.control.kind === "orientation") {
-        await client.setLayerOrientation(edit.layer, edit.keycode);
-      } else if (edit.control.kind === "key") {
-        await client.setKeycode(edit.layer, edit.control.col, edit.keycode);
-      } else {
-        await client.setEncoder(edit.layer, edit.control.clockwise, edit.keycode);
-      }
-      patchNapeKeymap(edit.layer, edit.control, edit.keycode);
-    }
-    const layer = editedNapeLayer ?? napeKeymap?.layer;
-    if (layer != null) {
-      rememberNapeKeymap(await client.readLayerKeymap(layer));
-    }
-  } finally {
+  if (isAnyPreview) {
+    for (const edit of edits) patchNapeKeymap(edit.layer, edit.control, edit.keycode);
     stagedNapeAssignments.clear();
+    return;
   }
+  const client = keychronNapeClient();
+  if (!client) return;
+  for (const edit of edits) {
+    if (edit.control.kind === "orientation") {
+      await client.setLayerOrientation(edit.layer, edit.keycode);
+    } else if (edit.control.kind === "key") {
+      await client.setKeycode(edit.layer, edit.control.col, edit.keycode);
+    } else {
+      await client.setEncoder(edit.layer, edit.control.clockwise, edit.keycode);
+    }
+    patchNapeKeymap(edit.layer, edit.control, edit.keycode);
+  }
+  const layer = editedNapeLayer ?? napeKeymap?.layer;
+  if (layer != null) {
+    rememberNapeKeymap(await client.readLayerKeymap(layer));
+  }
+  // Clear only after every assignment landed; a throw leaves the map for a
+  // retry (see writeStagedButtonMappings).
+  stagedNapeAssignments.clear();
 }
 
 function syncEditedNapeLayer(status: MouseStatus): void {
