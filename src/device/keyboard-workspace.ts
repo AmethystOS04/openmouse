@@ -3,6 +3,8 @@ import type { WuqueMacroRead, WuqueHidClient } from '@openmouse/keyboard-protoco
 import type { WuqueAxisReading, WuqueHigherKey, WuqueHigherKeyWrite, WuqueKeyLayoutStyle, WuqueKeyLayoutDefault, WuqueLightingBase, WuqueLightingLed, WuqueLightingPaletteColor, WuqueMacroEvent, WuqueRgb } from '@openmouse/keyboard-protocol/wuque';
 
 export interface KeyboardWorkspace {
+  /** HB68 mode; independent of the Wuque global-settings structure. */
+  systemMode?: "win" | "mac";
   global: WuqueGlobalState | null;
   lighting: WuqueLightingState | null;
   custom: readonly WuqueLightingLed[];
@@ -14,6 +16,7 @@ export interface KeyboardWorkspace {
   higher: WuqueHigherKey | null;
   adc: WuqueAxisReading | null;
 }
+/** A blank keyboard workspace, before any board data is read. */
 export const emptyKeyboardWorkspace = (): KeyboardWorkspace => ({ global: null, lighting: null, custom: [], shell: null, layer: null, styles: [], defaults: [], macro: null, higher: null, adc: null });
 export type KeyboardCommand =
   | { kind: 'refresh' }

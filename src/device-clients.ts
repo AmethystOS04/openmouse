@@ -27,6 +27,8 @@ import {
   type SupportedClient,
 } from "@openmouse/protocol/drivers/registry";
 import { RAZER_PRODUCTS } from "@openmouse/protocol/razer-devices";
+import { KochiKeyboardClient } from "./device/kochi-keyboard.ts";
+import type { KeyboardClient } from "./device/keyboard-client.ts";
 import { WuqueKeyboardClient } from "./device/wuque-keyboard.ts";
 export { describeHidDevice } from "./hid-diagnostics.ts";
 export { deviceBrand, type PulsarClient, type SupportedClient };
@@ -46,12 +48,17 @@ function bridgeRazerClient(device: HIDDevice): SupportedClient | null {
 }
 
 
+/** The mouse client for a device, including Bridge-exposed Razer boards. */
 export function createSupportedClient(device: HIDDevice): SupportedClient | null {
   return registryCreateSupportedClient(device) ?? bridgeRazerClient(device);
 }
 
-/** A keyboard client, when the device is a Wuque Studio board rather than a mouse. */
-export type KeyboardClient = WuqueKeyboardClient;
+export type { KeyboardClient };
+
+/** True when the client drives a keyboard rather than a mouse. */
+export function isKeyboardClient(client: SupportedClient | KeyboardClient): client is KeyboardClient {
+  return client instanceof WuqueKeyboardClient || client instanceof KochiKeyboardClient;
+}
 
 /**
  * Map an authorized HID device to a keyboard client. Keyboards are never
@@ -59,6 +66,7 @@ export type KeyboardClient = WuqueKeyboardClient;
  * `MouseStatus` would surface mouse cards for a device that has none.
  */
 export function createKeyboardClient(device: HIDDevice): KeyboardClient | null {
+  if (KochiKeyboardClient.isSupported(device)) return new KochiKeyboardClient(device);
   return WuqueKeyboardClient.isSupported(device) ? new WuqueKeyboardClient(device) : null;
 }
 
