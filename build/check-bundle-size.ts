@@ -195,7 +195,11 @@ const BUDGET_BYTES: Record<string, number> = {
   // and macro cards, and the ATK per-model capability cards. The measured
   // aggregate is 2,288.4 kB, 88 kB over the old 2.2 MB budget, leaving ~60 kB
   // of headroom.
-  ".js": 2_350_000,
+  // Raised to 2,450 kB for keyboard protocol 1.0.0 and its control panel:
+  // Wuque codecs/client wiring, shared workspace cards, per-key trigger UI,
+  // and keyboard strings in all ten locale chunks. The measured aggregate
+  // is 2,419.9 kB, leaving ~30 kB of headroom.
+  ".js": 2_450_000,
 };
 
 const ASSETS = join("dist", "assets");

@@ -27,7 +27,7 @@ export function SwitchButton({
       type="button"
       role="switch"
       aria-checked={unsupported ? false : value}
-      aria-label={label ? (unsupported ? `${label}, unavailable on this mouse` : label) : undefined}
+      aria-label={label ? (unsupported ? `${label}, unavailable on this device` : label) : undefined}
       disabled={unsupported || disabled}
       onClick={() => onChange(value !== true)}
     >
@@ -295,14 +295,48 @@ export function StepperSlider({
   formatValue: (shown: number) => string;
   disabled?: boolean;
   pendingKey?: string;
-  onCommit: (next: number) => void;
+  onCommit: (next: number) => void | Promise<void>;
 }): ReactNode {
   const [dragging, setDragging] = useState<number | null>(null);
+  const input = useRef<HTMLInputElement | null>(null);
+  const pending = useRef(false);
+  const revision = useRef(0);
   const shown = dragging ?? value;
   const clamp = (next: number): number => Math.max(min, Math.min(max, next));
   const commit = (next: number): void => {
-    if (!disabled) onCommit(clamp(next));
+    if (disabled || pending.current) return;
+    const committed = clamp(next);
+    const current = ++revision.current;
+    pending.current = true;
+    setDragging(committed);
+    const settle = (): void => {
+      if (revision.current !== current) return;
+      pending.current = false;
+      setDragging(null);
+    };
+    try {
+      // Hold the preview until asynchronous device write/read-back finishes.
+      // A failed write then falls back to the last confirmed prop value.
+      Promise.resolve(onCommit(committed)).then(settle, settle);
+    } catch (error) {
+      settle();
+      throw error;
+    }
   };
+  const latestCommit = useRef(commit);
+  latestCommit.current = commit;
+  useEffect(() => {
+    const element = input.current;
+    if (!element) return;
+    // React/Preact compat maps JSX onChange to input events. The native
+    // change event commits a range only at release (or a keyboard edit).
+    const change = (): void => latestCommit.current(Number(element.value));
+    element.addEventListener("change", change);
+    return () => {
+      element.removeEventListener("change", change);
+      revision.current++;
+    };
+  }, []);
   const span = Math.max(Number.EPSILON, max - min);
 
   return (
@@ -326,6 +360,7 @@ export function StepperSlider({
         </button>
         <input
           id={id}
+          ref={input}
           type="range"
           min={min}
           max={max}
@@ -336,12 +371,8 @@ export function StepperSlider({
           aria-valuetext={formatValue(shown)}
           style={{ "--fill": `${((shown - min) / span) * 100}%` }}
           onInput={(event) => setDragging(Number(event.currentTarget.value))}
-          onChange={(event) => {
-            const next = Number(event.currentTarget.value);
-            setDragging(null);
-            commit(next);
-          }}
-          onBlur={() => setDragging(null)}
+          onPointerCancel={() => { if (!pending.current) setDragging(null); }}
+          onBlur={() => { if (!pending.current) setDragging(null); }}
         />
         <button
           type="button"

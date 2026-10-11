@@ -27,6 +27,7 @@ import {
   type SupportedClient,
 } from "@openmouse/protocol/drivers/registry";
 import { RAZER_PRODUCTS } from "@openmouse/protocol/razer-devices";
+import { WuqueKeyboardClient } from "./device/wuque-keyboard.ts";
 export { describeHidDevice } from "./hid-diagnostics.ts";
 export { deviceBrand, type PulsarClient, type SupportedClient };
 
@@ -49,14 +50,34 @@ export function createSupportedClient(device: HIDDevice): SupportedClient | null
   return registryCreateSupportedClient(device) ?? bridgeRazerClient(device);
 }
 
+/** A keyboard client, when the device is a Wuque Studio board rather than a mouse. */
+export type KeyboardClient = WuqueKeyboardClient;
+
+/**
+ * Map an authorized HID device to a keyboard client. Keyboards are never
+ * `SupportedClient`s: the mouse registry does not know them, and faking a
+ * `MouseStatus` would surface mouse cards for a device that has none.
+ */
+export function createKeyboardClient(device: HIDDevice): KeyboardClient | null {
+  return WuqueKeyboardClient.isSupported(device) ? new WuqueKeyboardClient(device) : null;
+}
+
 export function clientSupportScore(device: HIDDevice): number {
-  return bridgeRazerClient(device) !== null ? 10_000 : registryClientSupportScore(device);
+  if (bridgeRazerClient(device) !== null) return 10_000;
+  // A Wuque board exposes a boot keyboard, a consumer-control and a mouse
+  // collection beside its vendor config interface. Only the vendor page answers
+  // commands, so it has to win the pick for the physical device.
+  if (createKeyboardClient(device) !== null) return 900;
+  return registryClientSupportScore(device);
 }
 
 /** Supported devices for the sidebar; multi-path drivers collapse via their module. */
 export function logicalDeviceGroups(devices: HIDDevice[] = []): HIDDevice[][] {
   const merged = collapseBoltPeers(
-    eggWeMergeLogicalDevices(devices, (device) => createSupportedClient(device) !== null),
+    eggWeMergeLogicalDevices(
+      devices,
+      (device) => createSupportedClient(device) !== null || createKeyboardClient(device) !== null,
+    ),
   );
   const byPhysicalDevice = new Map<string, HIDDevice[]>();
   for (const device of merged) {

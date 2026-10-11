@@ -1,3 +1,4 @@
+import { WORKSPACE_TAB_ORDER } from "../device/types";
 import {
   ArrowLeft,
   BarChart3,
@@ -25,6 +26,7 @@ import { MagneticButtons } from "./MagneticButtons";
 import { Superstrike } from "./Superstrike";
 import { ButtonMap, buttonMapAvailable } from "./ButtonMap";
 import { DpiCard } from "./cards/DpiCard";
+import { KeyboardPanel } from "./cards/KeyboardPanel";
 import { FirmwareCard } from "./cards/FirmwareCard";
 import { DynamicSensitivityCard, LightforceCard, PollingCard, SensorCard, SensorScanningCard } from "./cards/PerformanceCards";
 import { LightingCard } from "./cards/LightingCard";
@@ -778,7 +780,8 @@ function DeviceListView({ snapshot }: { snapshot: ControlSnapshot }): ReactNode 
                 ordered.splice(Math.floor(ordered.length / 2), 0, connected);
               }
               return ordered.map((device) => {
-              const connected = device.selected && snapshot.deviceStatus !== null;
+              const connected = device.selected
+                && (snapshot.deviceStatus !== null || snapshot.keyboard !== null);
               const liveStatus = connected ? snapshot.deviceStatus : null;
               const pollText = liveStatus?.pollingRateHz ? `${liveStatus.pollingRateHz} Hz` : "–";
               const batteryText = liveStatus?.batteryPercent != null ? `${liveStatus.batteryPercent}%` : "–%";
@@ -876,7 +879,7 @@ export function OverviewPage({
   const { preferences } = snapshot;
   const locale = preferences.locale;
 
-  const tabs = availableWorkspaceTabs(status !== null, cardAvailability(snapshot), {
+  const tabs = snapshot.keyboard ? WORKSPACE_TAB_ORDER : availableWorkspaceTabs(status !== null, cardAvailability(snapshot), {
     hideLighting: isNoirKsnakeStatus(status),
   });
   const workspaceTab = availableWorkspaceTab(snapshot.workspaceTab, tabs);
@@ -897,7 +900,7 @@ export function OverviewPage({
     });
   }, [snapshot.workspaceTab, workspaceTab]);
 
-  const showingDeviceDashboard = status !== null
+  const showingDeviceDashboard = (status !== null || snapshot.keyboard !== null)
     && (snapshot.deviceView === "device" || snapshot.previewMode !== null);
 
   // The tablist renders `profiles` in its own nav slot at the end, so arrow-key
@@ -933,40 +936,48 @@ export function OverviewPage({
               <ArrowLeft size={13} strokeWidth={1.8} aria-hidden="true" />
               {t(locale, "common.back")}
             </button>
-            {(tabs.filter((tab) => tab !== "profiles")).map((tab) => (
-              <button
-                key={tab}
-                id={`workspace-tab-${tab}`}
-                type="button"
-                role="tab"
-                className={`device-tab-pill${workspaceTab === tab ? " active" : ""}`}
-                aria-selected={workspaceTab === tab}
-                tabIndex={workspaceTab === tab ? 0 : -1}
-                onClick={() => control.setWorkspaceTab(tab)}
-                onKeyDown={(event) => onTabKey(event, tab)}
-              >
-                <TabIcon tab={tab} />
-                {t(locale, `tab.${tab}` as I18nKey)}
-              </button>
-            ))}
-            {tabs.includes("profiles") ? (
-              <button
-                type="button"
-                role="tab"
-                id="workspace-tab-profiles"
-                className={`device-tab-pill device-tab-profiles-nav${workspaceTab === "profiles" ? " active" : ""}`}
-                aria-selected={workspaceTab === "profiles"}
-                tabIndex={workspaceTab === "profiles" ? 0 : -1}
-                onClick={() => control.setWorkspaceTab("profiles")}
-                onKeyDown={(event) => onTabKey(event, "profiles")}
-              >
-                <TabIcon tab="profiles" />
-                {t(locale, "tab.profiles")}
-              </button>
-            ) : null}
+            {status === null && snapshot.keyboard === null ? null : (
+              <>
+                {(tabs.filter((tab) => tab !== "profiles")).map((tab) => (
+                  <button
+                    key={tab}
+                    id={`workspace-tab-${tab}`}
+                    type="button"
+                    role="tab"
+                    className={`device-tab-pill${workspaceTab === tab ? " active" : ""}`}
+                    aria-selected={workspaceTab === tab}
+                    tabIndex={workspaceTab === tab ? 0 : -1}
+                    onClick={() => control.setWorkspaceTab(tab)}
+                    onKeyDown={(event) => onTabKey(event, tab)}
+                  >
+                    <TabIcon tab={tab} />
+                    {t(locale, `tab.${tab}` as I18nKey)}
+                  </button>
+                ))}
+                {tabs.includes("profiles") ? (
+                  <button
+                    type="button"
+                    role="tab"
+                    id="workspace-tab-profiles"
+                    className={`device-tab-pill device-tab-profiles-nav${workspaceTab === "profiles" ? " active" : ""}`}
+                    aria-selected={workspaceTab === "profiles"}
+                    tabIndex={workspaceTab === "profiles" ? 0 : -1}
+                    onClick={() => control.setWorkspaceTab("profiles")}
+                    onKeyDown={(event) => onTabKey(event, "profiles")}
+                  >
+                    <TabIcon tab="profiles" />
+                    {t(locale, "tab.profiles")}
+                  </button>
+                ) : null}
+              </>
+            )}
           </nav>
 
-          <Workspace snapshot={workspaceSnapshot} onOpenCapture={onOpenCapture} onShareProfile={onShareProfile} />
+          {status === null && snapshot.keyboard !== null ? (
+            <KeyboardPanel snapshot={workspaceSnapshot} />
+          ) : (
+            <Workspace snapshot={workspaceSnapshot} onOpenCapture={onOpenCapture} onShareProfile={onShareProfile} />
+          )}
         </>
       ) : (
         <DeviceListView snapshot={snapshot} />
