@@ -204,7 +204,13 @@ const BUDGET_BYTES: Record<string, number> = {
   // the marker/default client handling arrive through bridge-hid's
   // SUPPORTED_HID_FILTERS. The measured aggregate is 2,454.4 kB, 4.4 kB over
   // the old 2,450 kB budget, leaving ~15 kB of headroom.
-  ".js": 2_470_000,
+  // Raised to 2,472 kB for the @openmouse/protocol 0.40.0 bump: the G-Wolves
+  // XVI-new driver (profile-addressed sensor commands plus clicks-only
+  // remap), 16 more cataloged G-Wolves PIDs and their picker filters, and
+  // the Bridge empty-enumeration diagnostic. The measured aggregate is
+  // 2,470.9 kB, 0.9 kB over the old 2,470 kB budget, leaving ~1 kB of
+  // headroom — the next driver will need a real diet or a bigger bump.
+  ".js": 2_472_000,
 };
 
 const ASSETS = join("dist", "assets");
