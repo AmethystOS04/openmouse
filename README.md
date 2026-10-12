@@ -4,6 +4,8 @@
 
 <p>
   <a href="https://github.com/OpenMouse-Project/openmouse/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/OpenMouse-Project/openmouse/ci.yml?branch=main&label=CI" alt="CI"/></a>
+  <a href="https://www.npmjs.com/package/@openmouse/protocol"><img src="https://img.shields.io/github/package-json/dependency-version/OpenMouse-Project/openmouse/@openmouse%2Fprotocol?label=mouse%20protocol" alt="Mouse protocol version"/></a>
+  <a href="https://www.npmjs.com/package/@openmouse/keyboard-protocol"><img src="https://img.shields.io/github/package-json/dependency-version/OpenMouse-Project/openmouse/@openmouse%2Fkeyboard-protocol?label=keyboard%20protocol" alt="Keyboard protocol version"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/OpenMouse-Project/openmouse" alt="License"/></a>
   <a href="https://github.com/OpenMouse-Project/openmouse/stargazers"><img src="https://img.shields.io/github/stars/OpenMouse-Project/openmouse" alt="Stars"/></a>
 </p>
