@@ -134,9 +134,10 @@ function noirE1ButtonMarkerPosition(button: string): ButtonMarkerPosition | null
   return NOIR_E1_BUTTON_MARKER_POSITIONS[button.trim().toLowerCase()] ?? null;
 }
 
-// Device artwork requests go straight to the documented GitHub issue form
-// (public/devices/README.md, .github/ISSUE_TEMPLATE/device-artwork.yml).
-const ARTWORK_ISSUE_URL = "https://github.com/OpenMouse-Project/openmouse/issues/new?template=device-artwork.yml";
+// Device artwork requests go to the Artwork Request discussion category
+// (artwork requests were migrated off GitHub issues into Discussions).
+const ARTWORK_DISCUSSION_URL =
+  "https://github.com/OpenMouse-Project/openmouse/discussions/new?category=artwork-request";
 
 function DeviceShowcase({ snapshot }: {
   snapshot: ControlSnapshot;
@@ -156,7 +157,7 @@ function DeviceShowcase({ snapshot }: {
       status.name,
     )
   );
-  const artworkIssueHref = `${ARTWORK_ISSUE_URL}${status.name ? `&title=${encodeURIComponent(`Artwork request: ${status.name}`)}` : ""}`;
+  const artworkDiscussionHref = `${ARTWORK_DISCUSSION_URL}${status.name ? `&title=${encodeURIComponent(`Artwork request: ${status.name}`)}` : ""}`;
 
   return (
     <div className="device-showcase">
@@ -246,7 +247,7 @@ function DeviceShowcase({ snapshot }: {
       {needsArtwork ? (
         <a
           className="artwork-upload-trigger"
-          href={artworkIssueHref}
+          href={artworkDiscussionHref}
           target="_blank"
           rel="noopener noreferrer"
         >
