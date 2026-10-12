@@ -1,6 +1,7 @@
 import { emptyKeyboardWorkspace } from "./keyboard-workspace.ts";
 import type { KeyboardCommand } from "./keyboard-workspace.ts";
 import { cachedBatterySamples, estimateBatteryTime, estimateFromRatedLife, ratedBattery, recordBatterySample, type BatteryMode } from "../battery-history";
+import { bridgeEmptyResultMessage, isBridgeHidActive } from "../bridge-hid";
 import { applyBridgeNativeSettings } from "../bridge";
 import { pollingRateText } from "../ui/polling-rate";
 import {
@@ -3553,7 +3554,19 @@ function handleHidDisconnect(event: HIDConnectionEvent): void {
 async function requestSupportedClient(): Promise<SupportedClient | KeyboardClient | null> {
   if (!navigator.hid) throw new Error(st("ctl.noWebHid"));
   const devices = await navigator.hid.requestDevice({ filters: HID_FILTERS });
-  if (devices.length === 0) return null;
+  if (devices.length === 0) {
+    // Native WebHID rejects when the picker is dismissed, so an empty list
+    // only arrives from the Bridge shim — which has no picker to cancel, only
+    // a native enumeration that matched nothing. Returning null here used to
+    // end the attempt silently (status text flashing back with just a click
+    // sound), hiding e.g. an unsupported-but-present receiver. Throw instead
+    // so the attempt ends in the persistent error + toast below.
+    if (isBridgeHidActive()) {
+      const known = await navigator.hid.getDevices();
+      throw new Error(bridgeEmptyResultMessage(known));
+    }
+    return null;
+  }
 
   if (devices.some((device) => eggWeIsSupported(device))) {
     const weClient = eggWeFromAuthorized(await eggWeAuthorizedPool(devices));
