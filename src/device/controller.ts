@@ -3562,7 +3562,7 @@ async function requestSupportedClient(): Promise<SupportedClient | KeyboardClien
     // sound), hiding e.g. an unsupported-but-present receiver. Throw instead
     // so the attempt ends in the persistent error + toast below.
     if (isBridgeHidActive()) {
-      const known = await navigator.hid.getDevices().catch(() => [] as HIDDevice[]);
+      const known = await navigator.hid.getDevices();
       throw new Error(bridgeEmptyResultMessage(known));
     }
     return null;
