@@ -210,7 +210,11 @@ const BUDGET_BYTES: Record<string, number> = {
   // the Bridge empty-enumeration diagnostic. The measured aggregate is
   // 2,470.9 kB, 0.9 kB over the old 2,470 kB budget, leaving ~1 kB of
   // headroom — the next driver will need a real diet or a bigger bump.
-  ".js": 2_472_000,
+  // Raised to 2,474 kB for the @openmouse/protocol 0.40.1 bump: XVI-new
+  // button-slot fix plus the real DPI stage table and per-stage/active
+  // setters. The measured aggregate is 2,472.0 kB, under a kilobyte over
+  // the old 2,472 kB budget.
+  ".js": 2_474_000,
 };
 
 const ASSETS = join("dist", "assets");
