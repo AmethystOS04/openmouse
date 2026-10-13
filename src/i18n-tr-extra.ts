@@ -1122,5 +1122,10 @@ export const trExtra: Readonly<Record<string, string>> = {
   "Light": "Açık",
   "Pulsar XS-1 8K dongle": "Pulsar XS-1 8K alıcı",
   "Logitech G402 (legacy DPI)": "Logitech G402 (eski DPI protokolü)",
-  "Polling down": "Yoklama hızını azalt"
+  "Polling down": "Yoklama hızını azalt",
+  "Invalid checksum": "Geçersiz sağlama toplamı",
+  "About {0} h per full charge at {1} Hz": "{1} Hz hızında tam şarjla yaklaşık {0} saat",
+  "{from} has {n} change{s} you have not flashed: {changes} Opening {to} discards {pronoun}. Continue?": "{from} profilinde fareye yazılmamış {n} değişiklik var:\n\n{changes}\n\n{to} açılırsa bu değişiklikler silinir. Devam edilsin mi?",
+  "Enable profile {sector}? This writes to the mouse's flash memory — one write cycle per change. OpenMouse has not yet verified this write sequence on hardware; G HUB can restore the profiles if anything goes wrong.": "{sector} numaralı profil etkinleştirilsin mi?\n\nBu işlem farenin kalıcı belleğine yazar; her değişiklik bir yazma döngüsü kullanır. OpenMouse bu yazma sırasını henüz donanımda doğrulamadı. Bir sorun olursa profilleri G HUB ile geri yükleyebilirsiniz.",
+  "Disable profile {sector}? This writes to the mouse's flash memory — one write cycle per change. OpenMouse has not yet verified this write sequence on hardware; G HUB can restore the profiles if anything goes wrong.": "{sector} numaralı profil devre dışı bırakılsın mı?\n\nBu işlem farenin kalıcı belleğine yazar; her değişiklik bir yazma döngüsü kullanır. OpenMouse bu yazma sırasını henüz donanımda doğrulamadı. Bir sorun olursa profilleri G HUB ile geri yükleyebilirsiniz."
 };

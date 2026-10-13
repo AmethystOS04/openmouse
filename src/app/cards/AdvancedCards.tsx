@@ -1346,7 +1346,7 @@ function CpiStageRow({
       <strong>{tp(locale, "adv.stage", { n: index + 1 })}</strong>
       <label className="egg-split-toggle">
         <input type="checkbox" checked={split} onChange={(event) => setSplit(event.currentTarget.checked)} />
-        {displayText(locale, " ")}{t(locale, "adv.separateXY")}
+        {" "}{t(locale, "adv.separateXY")}
       </label>
       <div className="egg-tile-pair">
         <label className="egg-tile-label">

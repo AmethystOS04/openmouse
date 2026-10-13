@@ -2,18 +2,11 @@ import { displayText } from "../../../i18n";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import * as control from "../../../device/controller";
 import type { ControlSnapshot } from "../../../device/types";
-import { t, tp } from "../../../i18n";
+import { t } from "../../../i18n";
+import { profileLabel } from "../../../ui/profile-label";
 import { IconActivate, IconRunning } from "../../icons";
 import { OptionMenu } from "../../ui";
 import "./profile-card.css";
-
-function profileLabel(
-  locale: ControlSnapshot["preferences"]["locale"],
-  names: readonly string[] | undefined,
-  index: number,
-): string {
-  return names?.[index] ?? tp(locale, "adv.profileOpt", { n: index + 1 });
-}
 
 /**
  * Terra Pro onboard banks: the G502 profile disclosure, then the button map
@@ -76,7 +69,7 @@ export function TeevolutionProfileCard({ snapshot }: { snapshot: ControlSnapshot
         >
           <span className="profile-summary-text">
             <span className="profile-summary-label">{t(locale, "prof.editing")}</span>
-            <strong>{displayText(locale, summaryName)}</strong>
+            <strong>{summaryName}</strong>
             <small>{displayText(locale, liveDetail || t(locale, "prof.profileStores"))}</small>
           </span>
           <i className="profile-summary-chevron" aria-hidden="true" />
@@ -107,7 +100,7 @@ export function TeevolutionProfileCard({ snapshot }: { snapshot: ControlSnapshot
                     <span className={`device-dot${running ? "" : " is-idle"}`} />
                     <span className="profile-row-text">
                       <strong>
-                        {displayText(locale, label)}{displayText(locale, tags ? ` · ${tags}` : "")}
+                        {label}{tags ? ` · ${tags}` : ""}
                       </strong>
                       <small>
                         {displayText(locale, running ? liveDetail || "stored on the mouse" : "stored on the mouse")}

@@ -2,7 +2,7 @@ import "./offline-banner.css";
 
 import type { InterfaceLocale } from "./interface-preferences";
 import { detectLocale, loadInterfacePreferences } from "./interface-preferences";
-import { ensureLocale, t } from "./i18n";
+import { ensureDisplayLocale, t } from "./i18n";
 
 /**
  * Announces a dropped connection. The banner stays empty while online so the
@@ -27,10 +27,10 @@ export function mountOfflineBanner(locale?: InterfaceLocale): void {
     banner.textContent = offline ? t(resolved(), "off.banner") : "";
   };
 
-  void ensureLocale(resolved()).then(sync);
+  void ensureDisplayLocale(resolved()).then(sync);
   window.addEventListener("online", sync);
   window.addEventListener("offline", sync);
   window.addEventListener("openmouse-localechange", sync);
-  window.addEventListener("storage", () => { void ensureLocale(resolved()).then(sync); });
+  window.addEventListener("storage", () => { void ensureDisplayLocale(resolved()).then(sync); });
   document.body.append(banner);
 }

@@ -103,11 +103,11 @@ export function Diagnostics({
           </div>
           <details id="device-debug-readlog" className="device-debug-raw">
             <summary>{t(locale, "diag.reads")}</summary>
-            <pre id="device-debug-reads" className="device-debug-snapshot">{displayText(locale, diagnostics.reads)}</pre>
+            <pre id="device-debug-reads" className="device-debug-snapshot">{diagnostics.reads}</pre>
           </details>
           <details id="device-debug-raw" className="device-debug-raw">
             <summary>{t(locale, "diag.rawSnapshot")}</summary>
-            <pre id="device-debug-snapshot" className="device-debug-snapshot">{displayText(locale, diagnostics.snapshot)}</pre>
+            <pre id="device-debug-snapshot" className="device-debug-snapshot">{diagnostics.snapshot}</pre>
           </details>
         </article>
       </Collapsible>

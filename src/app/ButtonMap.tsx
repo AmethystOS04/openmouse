@@ -1,4 +1,5 @@
 import { displayText } from "../i18n";
+import { matchesCommandQuery } from "../ui/command-search";
 import { useUiLocale } from "./ui-locale";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import * as control from "../device/controller";
@@ -148,13 +149,10 @@ export function ButtonMap({ snapshot: live }: { snapshot: ControlSnapshot }): Re
 
   const hints = layer === "primary" ? conflictHints(layout.spots.map((spot) => ({ label: spot.label, text: textFor(spot) }))) : [];
 
-  const needle = query.trim().toLocaleLowerCase(__uiLocale);
   const sections = COMMAND_SECTIONS
     .map((section) => ({
       ...section,
-      entries: section.entries.filter((command) => !needle
-        || displayText(__uiLocale, command.label).toLocaleLowerCase(__uiLocale).includes(needle)
-        || displayText(__uiLocale, command.hint ?? "").toLocaleLowerCase(__uiLocale).includes(needle)),
+      entries: section.entries.filter((command) => matchesCommandQuery(__uiLocale, query, command.label, command.hint)),
     }))
     .filter((section) => section.entries.length > 0);
 

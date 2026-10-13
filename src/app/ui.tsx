@@ -455,7 +455,7 @@ export function RateSlider({
         })}
       </div>
       {selected !== null && hoursAt?.(options[selected] ?? 0) != null ? (
-        <small className="rate-slider-hours"> {displayText(locale, "About")} {Math.round(hoursAt?.(options[selected] ?? 0) as number)} {displayText(locale, "h per full charge at")} {displayText(locale, options[selected]?.toLocaleString())} Hz
+        <small className="rate-slider-hours">{displayText(locale, `About ${Math.round(hoursAt?.(options[selected] ?? 0) as number)} h per full charge at ${options[selected]?.toLocaleString()} Hz`)}
         </small>
       ) : null}
     </div>

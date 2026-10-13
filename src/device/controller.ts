@@ -57,7 +57,7 @@ import {
   type InterfacePreferences,
   type InterfaceTheme,
 } from "../interface-preferences";
-import { displayText, batteryStateText, connectionText, ensureLocale, layerLabel, t, tp, type I18nKey } from "../i18n";
+import { displayText, displayTemplate, batteryStateText, connectionText, ensureDisplayLocale, layerLabel, t, tp, type I18nKey } from "../i18n";
 import {
   EGG_BUTTON_NAMES,
   EggOp1HidClient,
@@ -2219,7 +2219,7 @@ export function setPreference<K extends keyof InterfacePreferences>(
   saveInterfacePreferences();
   // Locale tables load lazily; re-render once the table arrives so a switch
   // never sticks on English fallback strings.
-  if (key === "locale" && value !== "en") void ensureLocale(value as InterfaceLocale).then(() => emit());
+  if (key === "locale" && value !== "en") void ensureDisplayLocale(value as InterfaceLocale).then(() => emit());
 }
 
 /** Re-render subscribers without changing state (e.g. after a lazy asset
@@ -4457,11 +4457,12 @@ function confirmDiscardingProfileEdits(target: number | "host"): boolean {
   const to = target === "host"
     ? "Host"
     : onboardProfiles?.find((profile) => profile.sector === target)?.name ?? `Profile ${target}`;
-  return window.confirm(
-    displayText(interfacePreferences.locale, `${from} has ${staged.length} change${staged.length === 1 ? "" : "s"} you have not flashed:\n\n`)
-    + `${staged.map((change) => `  • ${displayText(interfacePreferences.locale, change.label)}`).join("\n")}\n\n`
-    + displayText(interfacePreferences.locale, `Opening ${to} discards ${staged.length === 1 ? "it" : "them"}. Continue?`),
-  );
+  return window.confirm(displayTemplate(interfacePreferences.locale,
+    "{from} has {n} change{s} you have not flashed:\n\n{changes}\n\nOpening {to} discards {pronoun}. Continue?",
+    { from, n: staged.length, s: staged.length === 1 ? "" : "s",
+      changes: staged.map((change) => `  • ${displayText(interfacePreferences.locale, change.label)}`).join("\n"),
+      to, pronoun: staged.length === 1 ? "it" : "them" },
+  ));
 }
 
 export function openOnboardProfile(sector: number | "host"): void {
@@ -4869,11 +4870,12 @@ export async function toggleOnboardProfileEnabled(sector: number, enabled: boole
   const client = logitechClient();
   if (!client || refreshInProgress || settingInProgress) return;
 
-  const confirmed = window.confirm(
-    displayText(interfacePreferences.locale, `${enabled ? "Enable" : "Disable"} profile ${sector}?\n\n`)
-    + displayText(interfacePreferences.locale, "This writes to the mouse's flash memory — one write cycle per change. ")
-    + displayText(interfacePreferences.locale, "OpenMouse has not yet verified this write sequence on hardware; G HUB can restore the profiles if anything goes wrong."),
-  );
+  const confirmed = window.confirm(displayTemplate(interfacePreferences.locale,
+    enabled
+      ? "Enable profile {sector}?\n\nThis writes to the mouse's flash memory — one write cycle per change. OpenMouse has not yet verified this write sequence on hardware; G HUB can restore the profiles if anything goes wrong."
+      : "Disable profile {sector}?\n\nThis writes to the mouse's flash memory — one write cycle per change. OpenMouse has not yet verified this write sequence on hardware; G HUB can restore the profiles if anything goes wrong.",
+    { sector },
+  ));
   if (!confirmed) return;
 
   settingInProgress = true;

@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import ts from "typescript";
-import { displayText, ensureLocale } from "./i18n.ts";
+import { displayTemplate, displayText, ensureLocale, tp } from "./i18n.ts";
 import { trExtra } from "./i18n-tr-extra.ts";
 
 test("Turkish legacy display catalog translates every literal entry", async () => {
@@ -28,6 +28,20 @@ test("Turkish dynamic messages translate values and preserve user names", async 
   assert.equal(displayText("tr", 1600), 1600);
   assert.equal(displayText("tr", undefined), undefined);
   assert.equal(displayText("tr", "UnknownFutureProtocolCode"), "UnknownFutureProtocolCode");
+});
+
+test("Turkish elapsed time, status and whole sentences retain their actual values", async () => {
+  await ensureLocale("tr");
+  assert.equal(tp("tr", "hw.finishTime", { s: "4.2" }), "4.2 saniyede tamamlandı");
+  assert.equal(tp("tr", "ctl.pairEnded", { s: 7 }), "Eşleştirme, fare çevrimiçi olmadan sona erdi (durum 7).");
+  assert.equal(displayText("tr", "Finished in 4.2 s"), "4.2 saniyede tamamlandı");
+  assert.equal(displayText("tr", "Pairing ended without an online mouse (status 7)."), "Eşleştirme, fare çevrimiçi olmadan sona erdi (durum 7).");
+  assert.equal(displayText("tr", "About 80 h per full charge at 1,000 Hz"), "1,000 Hz hızında tam şarjla yaklaşık 80 saat");
+  const source = "{from} has {n} change{s} you have not flashed:\n\n{changes}\n\nOpening {to} discards {pronoun}. Continue?";
+  const vars = { from: "Default", n: 2, s: "s", changes: "  • DPI 800\n  • DPI 1600", to: "Mouse 1611", pronoun: "them" };
+  const message = displayTemplate("tr", source, vars);
+  assert.equal(message, "Default profilinde fareye yazılmamış 2 değişiklik var:\n\n  • DPI 800\n  • DPI 1600\n\nMouse 1611 açılırsa bu değişiklikler silinir. Devam edilsin mi?");
+  assert.ok(displayTemplate("en", source, vars).startsWith("Default has 2 changes"));
 });
 
 test("control UI contains no untranslated static JSX copy outside technical names", () => {

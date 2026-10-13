@@ -238,7 +238,7 @@ export function FirmwareCard({ snapshot }: { snapshot: ControlSnapshot }): React
               >
                 {t(locale, "fw.download")}
               </button>
-            ) : null}{displayText(locale, ' ')}
+            ) : null}{' '}
             {available.length > 0 ? (
               <button type="button" onClick={dismissAll}>
                 {t(locale, "fw.later")}

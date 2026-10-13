@@ -1,7 +1,7 @@
 import { displayText } from "../i18n";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import * as control from "../device/controller";
-import { ensureLocale } from "../i18n";
+import { ensureDisplayLocale } from "../i18n";
 import { interfaceThemeSlug } from "../interface-preferences";
 import { AppSidebar, type DesktopPage } from "./AppSidebar";
 import { OverviewPage } from "./OverviewPage";
@@ -79,7 +79,7 @@ export function App(): ReactNode {
     }
     // A stored non-English locale resolves its table after first paint;
     // re-render once it arrives instead of sticking on fallback strings.
-    void ensureLocale(locale).then(() => {
+    void ensureDisplayLocale(locale).then(() => {
       control.refreshInterface();
       window.dispatchEvent(new Event("openmouse-localechange"));
     });

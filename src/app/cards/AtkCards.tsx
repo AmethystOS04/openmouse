@@ -47,7 +47,7 @@ export function AtkButtonCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
           <div className="button-remap-row" key={mapping.id}>
             <span>{displayText(__uiLocale, mapping.name)}</span>
             <output title={`EEPROM 0x${mapping.address.toString(16).padStart(4, "0")} · ${mapping.raw}`}>
-              {mapping.checksumValid ? mapping.action : `Invalid checksum · ${mapping.raw}`}
+              {mapping.checksumValid ? displayText(__uiLocale, mapping.action) : `${displayText(__uiLocale, "Invalid checksum")} · ${mapping.raw}`}
             </output>
           </div>
         ))}
@@ -139,18 +139,18 @@ export function AtkSensorCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
       </div>
       <Segmented
         ariaLabel={displayText(__uiLocale, "Sensor sampling mode")}
-        options={modes.map((value) => ({ value, label: ATK_SENSOR_MODE_LABELS[value] }))}
+        options={modes.map((value) => ({ value, label: displayText(__uiLocale, ATK_SENSOR_MODE_LABELS[value]) }))}
         value={sensorMode}
         disabled={snapshot.settingInProgress}
         className={modes.length === 3 ? "three" : undefined}
         onChange={(mode) => void control.selectAtkSensorMode(mode)}
       />
       <small className="setting-note setting-note-stable">
-        {sensorMode === 2
+        {displayText(__uiLocale, sensorMode === 2
           ? "In this mode, the mouse sensor is in high performance state, high scanning frequency, more responsive control."
           : sensorMode === 1
             ? "ATK Shard competitive firmware: balanced scan rate for match play."
-            : "Basic sensor mode for daily work and maximum battery life."}
+            : "Basic sensor mode for daily work and maximum battery life.")}
       </small>
     </article>
   );
@@ -168,7 +168,7 @@ export function AtkDongleCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
       <small className="setting-note">{displayText(__uiLocale, "Lighting Effect Mode")}</small>
       <Segmented
         ariaLabel={displayText(__uiLocale, "Dongle LED effect")}
-        options={ATK_DONGLE_LIGHT_LABELS.map((label, value) => ({ value, label }))}
+        options={ATK_DONGLE_LIGHT_LABELS.map((label, value) => ({ value, label: displayText(__uiLocale, label) }))}
         value={dongleLight}
         disabled={snapshot.settingInProgress}
         onChange={(mode) => void control.selectAtkDongleLight(mode)}

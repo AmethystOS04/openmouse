@@ -409,11 +409,11 @@ export function GameRequestDialog({ open, onClose, locale = "en", bridgeActive, 
               <div className="gamereq-embed-fields">
                 <div>
                   <span>{displayText(locale, kind === "game" ? "Game" : "App")}</span>
-                  <strong>{displayText(locale, trimmedName)}</strong>
+                  <strong>{trimmedName}</strong>
                 </div>
                 <div>
                   <span>{displayText(locale, "Executable")}</span>
-                  <code className="gamereq-mono">{displayText(locale, exe)}</code>
+                  <code className="gamereq-mono">{exe}</code>
                 </div>
                 <div>
                   <span>{displayText(locale, "Platform")}</span>
@@ -421,11 +421,11 @@ export function GameRequestDialog({ open, onClose, locale = "en", bridgeActive, 
                 </div>
                 <div className="is-wide">
                   <span>{displayText(locale, "Path")}</span>
-                  <code className="gamereq-mono">{displayText(locale, cleanedPath)}</code>
+                  <code className="gamereq-mono">{cleanedPath}</code>
                 </div>
               </div>
               <p className="gamereq-embed-footer">
-                <Gamepad2 size={13} aria-hidden="true" /> @{displayText(locale, handle)}
+                <Gamepad2 size={13} aria-hidden="true" /> @{handle}
               </p>
             </div>
 

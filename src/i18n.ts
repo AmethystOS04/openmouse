@@ -1323,6 +1323,19 @@ export function ensureLocale(locale: InterfaceLocale): Promise<void> {
   });
 }
 
+/** Load display copy without blocking startup on a missing/offline lazy chunk.
+ * Failed loads do not populate the locale cache, so a later call can retry. */
+export async function ensureDisplayLocale(
+  locale: InterfaceLocale,
+  load: (locale: InterfaceLocale) => Promise<void> = ensureLocale,
+): Promise<void> {
+  try {
+    await load(locale);
+  } catch {
+    // t() continues to provide the existing English fallback.
+  }
+}
+
 /** Keys present in English but missing (or empty) in another locale. */
 export async function missingTranslations(): Promise<Array<{ locale: InterfaceLocale; key: string }>> {
   const locales = Object.keys(LOCALE_LOADERS) as Array<Exclude<InterfaceLocale, "en">>;
@@ -1353,6 +1366,11 @@ export function displayText<T extends string | number | null | undefined>(locale
   return translateDisplay(locale, value, 0) as T;
 }
 
+/** Translate complete display copy before inserting values, preserving user data. */
+export function displayTemplate(locale: InterfaceLocale, source: string, vars: Record<string, string | number>): string {
+  return displayText(locale, source).replace(/\{(\w+)\}/g, (_, name: string) => String(vars[name] ?? ""));
+}
+
 function translateDisplay(locale: InterfaceLocale, value: string, depth: number): string {
   if (depth > 4) return value;
   const source = value.replace(/\s+/g, " ").trim();
@@ -1372,7 +1390,8 @@ function translateDisplay(locale: InterfaceLocale, value: string, depth: number)
       for (const match of english.matchAll(/\{(\w+)\}/g)) {
         pattern += english.slice(end, match.index).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         names.push(match[1]);
-        pattern += match[1] === "s" ? "(s?)" : "(.*?)";
+        const pluralSuffix = match[1] === "s" && /\w$/.test(english.slice(0, match.index));
+        pattern += pluralSuffix ? "(s?)" : "(.*?)";
         end = match.index! + match[0].length;
       }
       pattern += english.slice(end).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

@@ -267,10 +267,10 @@ export function CaptureDialog({ open, onClose, locale = "en" }: { open: boolean;
                       style={{ display: "flex", gap: ".6rem", fontSize: ".62rem", color: "#d8d8dc", alignItems: "baseline" }}
                     >
                       <code style={{ color: "#8b8b90", minWidth: "3.2rem" }}>
-                        0x{displayText(locale, change.offset.toString(16).padStart(2, "0"))}
+                        0x{change.offset.toString(16).padStart(2, "0")}
                       </code>
                       <code style={{ minWidth: "5rem" }}>
-                        {displayText(locale, change.before.toString(16).padStart(2, "0"))} → {displayText(locale, change.after.toString(16).padStart(2, "0"))}
+                        {change.before.toString(16).padStart(2, "0")} → {change.after.toString(16).padStart(2, "0")}
                       </code>
                       <span style={{ color: change.field === "checksum" ? "#77777c" : "#6fd3a0" }}>
                         {displayText(locale, change.field ?? "unknown")}

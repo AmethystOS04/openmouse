@@ -48,9 +48,12 @@ test("Turkish loads on demand and renders localized labels and templates", async
 
 test("Turkish preserves English template variables except the English plural suffix", () => {
   const placeholders = (value: string) => [...value.matchAll(/\{(\w+)\}/g)]
-    .map((match) => match[1]).filter((name) => name !== "s").sort();
+    .map((match) => match[1]).sort();
   for (const key of Object.keys(tr) as Array<keyof typeof tr>) {
-    assert.deepEqual(placeholders(tr[key]), placeholders(t("en", key)), key);
-    assert.ok(!tr[key].includes("{s}"), `${key} must not append an English plural suffix`);
+    const source = t("en", key);
+    const pluralSuffix = /\w\{s\}/.test(source);
+    const expected = placeholders(source).filter((name) => !pluralSuffix || name !== "s");
+    assert.deepEqual(placeholders(tr[key]), expected, key);
+    if (pluralSuffix) assert.ok(!tr[key].includes("{s}"), `${key} must not append an English plural suffix`);
   }
 });
