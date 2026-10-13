@@ -3,6 +3,7 @@ import type { I18nKey } from "./i18n.ts";
 /** Korean strings, split into a lazy chunk so the initial bundle ships
     English only. Loaded via ensureLocale() before first use. */
 export const ko: Record<I18nKey, string> = {
+  "set.turkish": "Türkçe",
   "luna.angleSnap": "직선 보정",
   "luna.competitiveMode": "경쟁 모드",
   "luna.trackingMode": "추적 모드",

@@ -3,6 +3,7 @@ import type { I18nKey } from "./i18n.ts";
 /** Simplified Chinese strings, split into a lazy chunk so the initial
     bundle ships English only. Loaded via ensureLocale() before first use. */
 export const zh: Record<I18nKey, string> = {
+  "set.turkish": "Türkçe",
   "luna.angleSnap": "直线修正",
   "luna.competitiveMode": "竞技模式",
   "luna.trackingMode": "追踪模式",

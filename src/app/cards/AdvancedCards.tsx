@@ -1,3 +1,5 @@
+import { displayText } from "../../i18n";
+import { useUiLocale } from "../ui-locale";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Plus, Save, Trash2 } from "lucide-react";
 import {
@@ -118,17 +120,17 @@ function KeychronSleepPicker({
     <div className="sleep-time-picker" role="group" aria-label={t(locale, "adv.sleepTimeout")}>
       <label>
         <input id="sleep-hours" type="number" aria-label={t(locale, "adv.hours")} {...bind(hours, setHours, KEYCHRON_SLEEP_MAX_HOURS)} />
-        <span>h</span>
+        <span>{displayText(locale, "h")}</span>
       </label>
       <span className="sleep-time-sep" aria-hidden="true">:</span>
       <label>
         <input id="sleep-minutes" type="number" aria-label={t(locale, "adv.minutes")} {...bind(minutes, setMinutes, 59)} />
-        <span>m</span>
+        <span>{displayText(locale, "m")}</span>
       </label>
       <span className="sleep-time-sep" aria-hidden="true">:</span>
       <label>
         <input id="sleep-seconds" type="number" aria-label={t(locale, "adv.seconds")} {...bind(seconds, setSeconds, 59)} />
-        <span>s</span>
+        <span>{displayText(locale, "s")}</span>
       </label>
     </div>
   );
@@ -141,11 +143,11 @@ export function SignalCard({ snapshot }: { snapshot: ControlSnapshot }): ReactNo
   return (
     <article id="signal-settings" className="setting-card">
       <div className="setting-heading compact">
-        <div><p>WIRELESS</p><h2>{t(locale, "adv.signal")}</h2></div>
-        <output id="signal-output">{unavailable ? "—" : `${strength}/4`}</output>
+        <div><p>{displayText(locale, "WIRELESS")}</p><h2>{t(locale, "adv.signal")}</h2></div>
+        <output id="signal-output">{displayText(locale, unavailable ? "—" : `${strength}/4`)}</output>
       </div>
       <small id="signal-detail" className="setting-note">
-        {unavailable ? t(locale, "adv.signalUnavailable") : signalWord(locale, strength ?? 0)}
+        {displayText(locale, unavailable ? t(locale, "adv.signalUnavailable") : signalWord(locale, strength ?? 0))}
       </small>
     </article>
   );
@@ -159,7 +161,7 @@ export function DongleLedCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
   return (
     <article id="dongle-led-settings" className={`setting-card${staged ? " is-staged" : ""}`} data-pending-key="dongle-led">
       <div className="setting-heading compact">
-        <div><p>WIRELESS</p><h2>{t(locale, "adv.dongleLed")}</h2></div>
+        <div><p>{displayText(locale, "WIRELESS")}</p><h2>{t(locale, "adv.dongleLed")}</h2></div>
         <SwitchButton
           id="dongle-led-toggle"
           label={t(locale, "adv.dongleLed")}
@@ -183,7 +185,7 @@ export function DebounceCard({ snapshot }: { snapshot: ControlSnapshot }): React
     const staged = snapshot.pending.keys.includes("debounce");
     return (
       <article id="debounce-settings" className={`setting-card${staged ? " is-staged" : ""}`}>
-        <div className="setting-heading compact"><div><p>CLICK</p><h2>{t(locale, "adv.debounce")}</h2></div></div>
+        <div className="setting-heading compact"><div><p>{displayText(locale, "CLICK")}</p><h2>{t(locale, "adv.debounce")}</h2></div></div>
         <StepperSlider
           id="atk-debounce-slider"
           label={t(locale, "adv.debounceDelay")}
@@ -219,7 +221,7 @@ export function DebounceCard({ snapshot }: { snapshot: ControlSnapshot }): React
   const staged = snapshot.pending.keys.includes("debounce");
   return (
     <article id="debounce-settings" className={`setting-card${staged ? " is-staged" : ""}`}>
-      <div className="setting-heading compact"><div><p>CLICK</p><h2>{t(locale, "adv.debounce")}</h2></div></div>
+      <div className="setting-heading compact"><div><p>{displayText(locale, "CLICK")}</p><h2>{t(locale, "adv.debounce")}</h2></div></div>
       <OptionMenu
         id="debounce-select"
         ariaLabel={t(locale, "adv.debounce")}
@@ -273,7 +275,7 @@ export function SleepCard({ snapshot }: { snapshot: ControlSnapshot }): ReactNod
   return (
     <article id="sleep-settings" className={`setting-card${staged ? " is-staged" : ""}`}>
       <div className="setting-heading compact">
-        <div><p>POWER</p><h2>{t(locale, "adv.autoSleep")}</h2></div>
+        <div><p>{displayText(locale, "POWER")}</p><h2>{t(locale, "adv.autoSleep")}</h2></div>
         {canDisable ? (
           <SwitchButton
             id="sleep-toggle"
@@ -320,7 +322,7 @@ export function KsnakeScrollCard({ snapshot }: { snapshot: ControlSnapshot }): R
             <span className="button-map-index" aria-hidden="true">W</span>
             <span className="button-map-name">{t(locale, "adv.scrollWheel")}</span>
           </span>
-          <span className="button-map-connector" aria-hidden="true">to</span>
+          <span className="button-map-connector" aria-hidden="true">{displayText(locale, "to")}</span>
           <span className="button-map-select-wrap">
             <select
               id="ksnake-scroll-direction"
@@ -354,7 +356,7 @@ export function LowPowerCard({ snapshot }: { snapshot: ControlSnapshot }): React
   const staged = snapshot.pending.keys.includes("low-power");
   return (
     <article id="low-power-settings" className={`setting-card${staged ? " is-staged" : ""}`}>
-      <div className="setting-heading compact"><div><p>POWER</p><h2>{t(locale, "adv.lowPower")}</h2></div></div>
+      <div className="setting-heading compact"><div><p>{displayText(locale, "POWER")}</p><h2>{t(locale, "adv.lowPower")}</h2></div></div>
       <OptionMenu
         id="low-power-select"
         ariaLabel={t(locale, "adv.lowPower")}
@@ -364,9 +366,9 @@ export function LowPowerCard({ snapshot }: { snapshot: ControlSnapshot }): React
         onChange={(next) => control.applyLowPowerThreshold(next)}
       />
       <small id="low-power-note" className="setting-note">
-        {tooFast
+        {displayText(locale, tooFast
           ? tp(locale, "adv.lowPowerCeiling", { max: ceiling.toLocaleString() })
-          : t(locale, "adv.lowPowerNote")}
+          : t(locale, "adv.lowPowerNote"))}
       </small>
     </article>
   );
@@ -405,7 +407,7 @@ export function ProcessingCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
   const hyperModeControl = (
     <SwitchRow
       id="hyper-mode-toggle"
-      label={hyperLabel}
+      label={displayText(locale, hyperLabel)}
       value={status.hyperMode}
       hidden={status.hyperMode == null}
       onChange={(next) => control.applyPulsarToggle("hyperMode", next)}
@@ -414,7 +416,7 @@ export function ProcessingCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
 
   return (
     <article id="processing-settings" className="setting-card">
-      <div className="setting-heading compact"><div><p>SENSOR</p><h2>{t(locale, "adv.processing")}</h2></div></div>
+      <div className="setting-heading compact"><div><p>{displayText(locale, "SENSOR")}</p><h2>{t(locale, "adv.processing")}</h2></div></div>
 
       {sensorUi && teevolutionProfile ? (
         <div id="teevolution-sensor-mode-row" className="field-label spaced">
@@ -432,9 +434,9 @@ export function ProcessingCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
             )}
           />
           <small id="teevolution-sensor-mode-note" className="setting-note">
-            {sensorUi.editable
+            {displayText(locale, sensorUi.editable
               ? t(locale, "adv.ecoNote")
-              : tp(locale, "adv.lockedNote", { mode: sensorUi.mode, hz: status.pollingRateHz.toLocaleString(), conn: status.connectionType?.toLowerCase() ?? "" })}
+              : tp(locale, "adv.lockedNote", { mode: sensorUi.mode, hz: status.pollingRateHz.toLocaleString(), conn: status.connectionType?.toLowerCase() ?? "" }))}
           </small>
         </div>
       ) : null}
@@ -457,21 +459,21 @@ export function ProcessingCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
 
       <SwitchRow
         id="motion-sync-toggle"
-        label={lunafurySettingLabel(status, locale, "motionSync") ?? "Motion Sync"}
+        label={displayText(locale, lunafurySettingLabel(status, locale, "motionSync") ?? "Motion Sync")}
         value={status.motionSync}
         hidden={ui?.hideMotionSync === true}
         onChange={(next) => control.applyPulsarToggle("motionSync", next)}
       />
       <SwitchRow
         id="angle-snapping-toggle"
-        label={angleSnappingLabel}
+        label={displayText(locale, angleSnappingLabel)}
         value={status.angleSnapping}
         hidden={ui?.hideAngleSnapping === true || traits.finalmouse}
         onChange={(next) => control.applyPulsarToggle("angleSnapping", next)}
       />
       <SwitchRow
         id="ripple-control-toggle"
-        label={lunafurySettingLabel(status, locale, "rippleControl") ?? "Ripple control"}
+        label={displayText(locale, lunafurySettingLabel(status, locale, "rippleControl") ?? "Ripple control")}
         value={status.rippleControl}
         hidden={ui?.hideRippleControl === true || traits.finalmouse}
         onChange={(next) => control.applyPulsarToggle("rippleControl", next)}
@@ -487,7 +489,7 @@ export function ProcessingCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
       <SwitchRow
         id="performance-mode-toggle"
         labelId="performance-mode-label"
-        label={performanceLabel}
+        label={displayText(locale, performanceLabel)}
         value={status.performanceMode}
         hidden={status.performanceMode == null || traits.eggFamily || traits.finalmouse || !lunafuryTrackingVisible(status)}
         onChange={(next) => control.applyPulsarToggle("performanceMode", next)}
@@ -532,14 +534,14 @@ export function ProcessingCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
               pendingKey="atk-rotation"
               onCommit={() => undefined}
             />
-            <small className="setting-note">Precise horizontal movement regardless of mouse grip style. Rotation writes touch calibration and stay locked pending a USB capture — calibrate in ATK HUB for now.</small>
+            <small className="setting-note">{displayText(locale, "Precise horizontal movement regardless of mouse grip style. Rotation writes touch calibration and stay locked pending a USB capture — calibrate in ATK HUB for now.")}</small>
           </>
         ) : capabilities?.angleTuningWritable
-          ? <AngleTuningControl value={angleTuning} label={angleLabel} disabled={snapshot.settingInProgress} />
+          ? <AngleTuningControl value={angleTuning} label={displayText(locale, angleLabel)} disabled={snapshot.settingInProgress} />
           : (
             <StepperSlider
               id="angle-tune-slider"
-              label={angleLabel}
+              label={displayText(locale, angleLabel)}
               value={angleTuning}
               min={-30}
               max={30}
@@ -606,12 +608,13 @@ function AtkAntiMistouchControl({ milliseconds, busy, locale }: { milliseconds: 
 }
 
 function AngleTuningControl({ value, label, disabled }: { value: number; label: string; disabled?: boolean }): ReactNode {
+  const __uiLocale = useUiLocale();
   const apply = (next: number): void => control.applyAngleTuning(Math.max(-30, Math.min(30, next)));
 
   return (
     <StepperSlider
       id="angle-tune-slider"
-      label={label}
+      label={displayText(__uiLocale, label)}
       value={value}
       min={-30}
       max={30}
@@ -645,7 +648,7 @@ export function DpiLightingCard({ snapshot }: { snapshot: ControlSnapshot }): Re
       className={`setting-card${staged ? " is-staged" : ""}`}
       data-pending-key="teevolution-dpi-light-mode teevolution-dpi-light-brightness teevolution-dpi-light-speed dpi-light-sleep"
     >
-      <div className="setting-heading compact"><div><p>{powerOverview ? "POWER" : "LIGHTING"}</p><h2>{t(locale, "adv.dpiIndicator")}</h2></div></div>
+      <div className="setting-heading compact"><div><p>{displayText(locale, powerOverview ? "POWER" : "LIGHTING")}</p><h2>{t(locale, "adv.dpiIndicator")}</h2></div></div>
       <div className="field-label">
         <span>{t(locale, "adv.effect")}</span>
         <OptionMenu
@@ -662,7 +665,7 @@ export function DpiLightingCard({ snapshot }: { snapshot: ControlSnapshot }): Re
         <label>
           {t(locale, "adv.brightness")}
           <output id="teevolution-dpi-light-brightness-output">
-            {status.dpiLedBrightness == null ? "—" : status.dpiLedBrightness}
+            {displayText(locale, status.dpiLedBrightness == null ? "—" : status.dpiLedBrightness)}
           </output>
           <span className="glass-slider-rail">
             <input
@@ -684,7 +687,7 @@ export function DpiLightingCard({ snapshot }: { snapshot: ControlSnapshot }): Re
         <label>
           {t(locale, "adv.speed")}
           <output id="teevolution-dpi-light-speed-output">
-            {status.dpiLedSpeed == null ? "—" : status.dpiLedSpeed}
+            {displayText(locale, status.dpiLedSpeed == null ? "—" : status.dpiLedSpeed)}
           </output>
           <span className="glass-slider-rail">
             <input
@@ -742,7 +745,7 @@ export function NinjutsoSensorCard({ snapshot }: { snapshot: ControlSnapshot }):
           className="setting-card"
           data-pending-key="ninjutso-system ninjutso-optical"
         >
-          <div className="setting-heading"><div><p>NINJAFORCE · SENSOR</p><h2>{t(locale, "adv.sensorPerf")}</h2></div></div>
+          <div className="setting-heading"><div><p>{displayText(locale, "NINJAFORCE · SENSOR")}</p><h2>{t(locale, "adv.sensorPerf")}</h2></div></div>
           {status.ninjutsoSystemModes?.length ? (
             <div id="ninjutso-system-row">
               <div className="setting-heading tight"><div><h2>{t(locale, "adv.systemMode")}</h2></div></div>
@@ -759,11 +762,11 @@ export function NinjutsoSensorCard({ snapshot }: { snapshot: ControlSnapshot }):
           ) : null}
           {status.ninjutsoOpticalEngine ? (
             <div id="ninjutso-optical-row" className="lighting-speed-row">
-              <div className="setting-heading tight"><div><h2>Optical Engine</h2></div></div>
+              <div className="setting-heading tight"><div><h2>{displayText(locale, "Optical Engine")}</h2></div></div>
               <Segmented
                 id="ninjutso-optical-options"
                 className="two"
-                ariaLabel="Optical Engine"
+                ariaLabel={displayText(locale, "Optical Engine")}
                 options={["Standard", "Burst"].map((value) => ({ value, label: value }))}
                 value={status.ninjutsoOpticalEngine}
                 disabled={disabled || opticalLocked}
@@ -789,10 +792,10 @@ export function NinjutsoClickCard({ snapshot }: { snapshot: ControlSnapshot }): 
           className="setting-card"
           data-pending-key="ninjutso-hyper ninjutso-slam"
         >
-          <div className="setting-heading"><div><p>NINJAFORCE · CLICKS</p><h2>{t(locale, "adv.clickBehavior")}</h2></div></div>
+          <div className="setting-heading"><div><p>{displayText(locale, "NINJAFORCE · CLICKS")}</p><h2>{t(locale, "adv.clickBehavior")}</h2></div></div>
           <SwitchRow
             id="ninjutso-hyper-toggle"
-            label="HyperClick"
+            label={displayText(locale, "HyperClick")}
             value={status.ninjutsoHyperClick}
             hidden={status.ninjutsoHyperClick == null}
             disabled={disabled}
@@ -800,11 +803,11 @@ export function NinjutsoClickCard({ snapshot }: { snapshot: ControlSnapshot }): 
           />
           {status.ninjutsoSlamClick ? (
             <div id="ninjutso-slam-row" className="lighting-speed-row">
-              <div className="setting-heading tight"><div><h2>Slam-Click</h2></div></div>
+              <div className="setting-heading tight"><div><h2>{displayText(locale, "Slam-Click")}</h2></div></div>
               <Segmented
                 id="ninjutso-slam-options"
                 className="three"
-                ariaLabel="Slam-Click"
+                ariaLabel={displayText(locale, "Slam-Click")}
                 options={["Low", "Medium", "High"].map((value) => ({ value, label: value }))}
                 value={status.ninjutsoSlamClick}
                 disabled={disabled}
@@ -986,12 +989,12 @@ function TmrSideControl({ snapshot, side, both }: {
   const applyActuation = both ? control.applyFinalmouseTmrActuationBoth : (value: number) => control.applyFinalmouseTmrActuation(side, value);
   const applyRt = both ? control.applyFinalmouseRtSensitivityBoth : (value: number) => control.applyFinalmouseRtSensitivity(side, value);
   return (
-    <div className="tmr-side" data-side={both ? "both" : side} role="group" aria-label={sideLabel}>
+    <div className="tmr-side" data-side={both ? "both" : side} role="group" aria-label={displayText(locale, sideLabel)}>
       <div className="field-label">
-        <span>{sideLabel}</span>
+        <span>{displayText(locale, sideLabel)}</span>
         <OptionMenu
           id={`finalmouse-click-mode-${suffix}`}
-          ariaLabel={sideLabel}
+          ariaLabel={displayText(locale, sideLabel)}
           options={[
             { value: SLX_CLICK_MECHANICAL, label: t(locale, "tmr.mechanical") },
             { value: SLX_CLICK_ANALOG, label: t(locale, "tmr.analog") },
@@ -1004,7 +1007,7 @@ function TmrSideControl({ snapshot, side, both }: {
         <span>{t(locale, "tmr.release")}</span>
         <OptionMenu
           id={`finalmouse-release-${suffix}`}
-          ariaLabel={`${sideLabel} ${t(locale, "tmr.release")}`}
+          ariaLabel={displayText(locale, `${sideLabel} ${t(locale, "tmr.release")}`)}
           options={[
             { value: SLX_RELEASE_NORMAL, label: t(locale, "tmr.releaseNormal") },
             { value: SLX_RELEASE_EARLY, label: t(locale, "tmr.releaseEarly") },
@@ -1046,7 +1049,7 @@ function TmrSideControl({ snapshot, side, both }: {
       ) : null}
       <div className="stat-row">
         <span>{t(locale, "tmr.smartRt")}</span>
-        <output id={`finalmouse-srt-${suffix}`}>{analog ? t(locale, "tmr.enabled") : t(locale, "tmr.disabled")}</output>
+        <output id={`finalmouse-srt-${suffix}`}>{displayText(locale, analog ? t(locale, "tmr.enabled") : t(locale, "tmr.disabled"))}</output>
       </div>
       {uncalibrated ? (
         <small className="setting-note">{t(locale, "tmr.uncalibrated")}</small>
@@ -1115,7 +1118,7 @@ export function PerfectPollingCard({ snapshot }: { snapshot: ControlSnapshot }):
       </div>
       <div className="stat-row">
         <span>{t(locale, "pp.latency")}</span>
-        <output id="perfect-polling-latency">250 µs (.25 ms)</output>
+        <output id="perfect-polling-latency">{displayText(locale, "250 µs (.25 ms)")}</output>
       </div>
       <small className="setting-note">{t(locale, "pp.body")}</small>
     </article>
@@ -1162,19 +1165,19 @@ export function FinalmouseProfilesCard({ snapshot }: { snapshot: ControlSnapshot
         return (
           <div key={index}>
             <div className="stat-row">
-              <span>{option.label}</span>
+              <span>{displayText(locale, option.label)}</span>
               <span className="profile-row-actions">
                 {roster.enabledMask !== null ? (
                   <SwitchButton
                     id={`finalmouse-profile-enable-${index}`}
                     value={bit}
-                    label={`${toggleLabel}: ${option.label}`}
+                    label={displayText(locale, `${toggleLabel}: ${option.label}`)}
                     onChange={(next) => control.applyFinalmouseProfileEnabled(index, next)}
                   />
                 ) : null}
                 <button
                   type="button"
-                  aria-label={`${t(locale, "fprof.rename")}: ${option.label}`}
+                  aria-label={displayText(locale, `${t(locale, "fprof.rename")}: ${option.label}`)}
                   onClick={() => {
                     setDraftName(option.label);
                     setRenaming(index);
@@ -1220,7 +1223,7 @@ export function EggFilterCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
   const locale = snapshot.preferences.locale;
   return (
     <article id="egg-filter-settings" className="setting-card">
-      <div className="setting-heading compact"><div><p>SENSOR</p><h2>{t(locale, "adv.filters")}</h2></div></div>
+      <div className="setting-heading compact"><div><p>{displayText(locale, "SENSOR")}</p><h2>{t(locale, "adv.filters")}</h2></div></div>
       <SwitchRow
         id="slamclick-filter-toggle"
         label={t(locale, "adv.slamclickFilter")}
@@ -1251,15 +1254,15 @@ export function EggSpdtCard({ snapshot }: { snapshot: ControlSnapshot }): ReactN
   const locale = snapshot.preferences.locale;
   return (
     <article id="egg-spdt-settings" className="setting-card">
-      <div className="setting-heading compact"><div><p>CLICK</p><h2>{t(locale, "adv.gxMode")}</h2></div></div>
+      <div className="setting-heading compact"><div><p>{displayText(locale, "CLICK")}</p><h2>{t(locale, "adv.gxMode")}</h2></div></div>
       {(["left", "right"] as const).map((side, index) => {
         const label = side === "left" ? t(locale, "adv.leftButton") : t(locale, "adv.rightButton");
         return (
           <div key={side} className={`field-label${index > 0 ? " spaced" : ""}`}>
-            <span>{label}</span>
+            <span>{displayText(locale, label)}</span>
             <OptionMenu
               id={`${side}-spdt-select`}
-              ariaLabel={label}
+              ariaLabel={displayText(locale, label)}
               options={["Off", "GX Safe", "GX Speed"].map((mode) => ({ value: mode, label: mode }))}
               value={(side === "left" ? status.leftSpdtMode : status.rightSpdtMode) ?? "Off"}
               onChange={(next) => control.applyEggSpdtMode(side, next as EggSpdtMode)}
@@ -1285,7 +1288,7 @@ export function EggPollingCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
       open={snapshot.preferences.expandSections}
     >
       <article className="setting-card egg-form-card">
-        <div className="setting-heading"><div><p>POLLING</p><h2>{t(locale, "adv.dividerTitle")}</h2></div></div>
+        <div className="setting-heading"><div><p>{displayText(locale, "POLLING")}</p><h2>{t(locale, "adv.dividerTitle")}</h2></div></div>
         <p className="egg-warning">
           {t(locale, "adv.dividerWarning")}
         </p>
@@ -1304,9 +1307,9 @@ export function EggPollingCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
           />
         </label>
         <small id="egg-polling-result" className="setting-note">
-{valid
+{displayText(locale, valid
             ? tp(locale, "adv.dividerResult", { hz: (8000 / divider).toLocaleString(undefined, { maximumFractionDigits: 2 }) })
-            : t(locale, "adv.dividerHint")}
+            : t(locale, "adv.dividerHint"))}
         </small>
         <button
           id="apply-egg-polling"
@@ -1343,7 +1346,7 @@ function CpiStageRow({
       <strong>{tp(locale, "adv.stage", { n: index + 1 })}</strong>
       <label className="egg-split-toggle">
         <input type="checkbox" checked={split} onChange={(event) => setSplit(event.currentTarget.checked)} />
-        {" "}{t(locale, "adv.separateXY")}
+        {displayText(locale, " ")}{t(locale, "adv.separateXY")}
       </label>
       <div className="egg-tile-pair">
         <label className="egg-tile-label">
@@ -1474,7 +1477,7 @@ export function RazerButtonCard({ snapshot }: { snapshot: ControlSnapshot }): Re
         so a badge would only ever read "7".
       */}
       <div className="setting-heading compact">
-        <div><p>BUTTONS</p><h2>{t(locale, "adv.mapping")}</h2></div>
+        <div><p>{displayText(locale, "BUTTONS")}</p><h2>{t(locale, "adv.mapping")}</h2></div>
       </div>
       <div className="button-remap-list">
         {rows.map((row) => {
@@ -1499,11 +1502,11 @@ export function RazerButtonCard({ snapshot }: { snapshot: ControlSnapshot }): Re
               className={`button-remap-row${staged ? " is-staged" : ""}`}
               data-pending-key={row.key}
             >
-              <span>{row.name}</span>
-              {row.locked ? <output>{row.current}</output> : (
+              <span>{displayText(locale, row.name)}</span>
+              {row.locked ? <output>{displayText(locale, row.current)}</output> : (
                 <OptionMenu
                   id={row.key}
-                  ariaLabel={row.name}
+                  ariaLabel={displayText(locale, row.name)}
                   options={[
                     ...(known ? [] : [{ value: row.current, label: row.current, disabled: true }]),
                     ...row.options.map((option) => ({ value: option, label: option })),
@@ -1551,7 +1554,7 @@ export function EggButtonCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
             const known = EGG_BUTTON_MAPPINGS.includes(current as EggButtonMapping);
             return (
               <div key={name}>
-                <strong>{name}</strong>
+                <strong>{displayText(locale, name)}</strong>
                 <label className="egg-tile-label stacked">
                   {t(locale, "adv.multiclick")}
                   <input
@@ -1573,7 +1576,7 @@ export function EggButtonCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
                   <span>{t(locale, "adv.mapping")}</span>
                   <OptionMenu
                     id={`egg-button-${index}`}
-                    ariaLabel={`${name} ${t(locale, "adv.mapping")}`}
+                    ariaLabel={displayText(locale, `${name} ${t(locale, "adv.mapping")}`)}
                     options={[
                       ...(known ? [] : [{ value: current, label: current, disabled: true }]),
                       ...EGG_BUTTON_MAPPINGS.map((mapping) => ({ value: mapping, label: mapping })),
@@ -2035,7 +2038,7 @@ export function KsnakeMacroCard({ snapshot }: { snapshot: ControlSnapshot }): Re
     return (
       <article id="ksnake-macro-settings" className="setting-card">
         <div className="setting-heading compact"><div><p>{t(locale, "macro.overline")}</p><h2>{t(locale, "macro.build")}</h2></div></div>
-        <p className="field-note">{snapshot.ksnakeMacrosError}</p>
+        <p className="field-note">{displayText(locale, snapshot.ksnakeMacrosError)}</p>
         <div className="setting-action"><button type="button" onClick={() => control.loadKsnakeMacros()}>{t(locale, "set.retry")}</button></div>
       </article>
     );
@@ -2052,7 +2055,7 @@ export function KsnakeMacroCard({ snapshot }: { snapshot: ControlSnapshot }): Re
         </div>
       </div>
       <p className="ksnake-macro-notice">
-        {isNoirKsnake ? t(locale, "macro.noticeWriteOnly") : t(locale, "macro.notice")}
+        {displayText(locale, isNoirKsnake ? t(locale, "macro.noticeWriteOnly") : t(locale, "macro.notice"))}
       </p>
       <label className="ksnake-macro-slot-picker">
         <span>{t(locale, "macro.slotLabel")}</span>
@@ -2061,7 +2064,7 @@ export function KsnakeMacroCard({ snapshot }: { snapshot: ControlSnapshot }): Re
             const stepCount = index === slot
               ? (isRecording ? recordedSteps.length : draft.steps.length)
               : profile.steps.length;
-            return <option key={index} value={index}>{t(locale, "macro.option")} {index + 1}{stepCount ? ` · ${tp(locale, "macro.steps", { n: stepCount })}` : ` · ${t(locale, "macro.empty")}`}</option>;
+            return <option key={index} value={index}>{t(locale, "macro.option")} {index + 1}{displayText(locale, stepCount ? ` · ${tp(locale, "macro.steps", { n: stepCount })}` : ` · ${t(locale, "macro.empty")}`)}</option>;
           })}
         </select>
       </label>
@@ -2069,16 +2072,16 @@ export function KsnakeMacroCard({ snapshot }: { snapshot: ControlSnapshot }): Re
         ref={recorderFocusRef}
         className={`ksnake-macro-recorder${isRecording ? " is-recording" : ""}`}
         aria-live="polite"
-        aria-label="Macro input capture"
+        aria-label={displayText(locale, "Macro input capture")}
         tabIndex={-1}
       >
         <div className="ksnake-macro-recorder-status">
           <span className="ksnake-macro-recorder-dot" aria-hidden="true" />
           <div>
-            <strong>{isRecording ? t(locale, "macro.recording") : t(locale, "macro.addActions")}</strong>
-            <span>{isRecording
+            <strong>{displayText(locale, isRecording ? t(locale, "macro.recording") : t(locale, "macro.addActions"))}</strong>
+            <span>{displayText(locale, isRecording
               ? tp(locale, "macro.eventsHint", { n: recordedSteps.length })
-              : t(locale, "macro.recorderHint")}</span>
+              : t(locale, "macro.recorderHint"))}</span>
           </div>
         </div>
         <div className="ksnake-macro-recorder-tools">
@@ -2142,15 +2145,15 @@ export function KsnakeMacroCard({ snapshot }: { snapshot: ControlSnapshot }): Re
             <ol>
               {recordedSteps.map((step, index) => (
                 <li key={`${slot}-recording-${index}`}>
-                  <span className="ksnake-macro-recording-step-number">{String(index + 1).padStart(2, "0")}</span>
-                  <strong>{ksnakeMacroStepLabel(step)}</strong>
-                  <small>{timingMode === "no-delay"
+                  <span className="ksnake-macro-recording-step-number">{displayText(locale, String(index + 1).padStart(2, "0"))}</span>
+                  <strong>{displayText(locale, ksnakeMacroStepLabel(step))}</strong>
+                  <small>{displayText(locale, timingMode === "no-delay"
                     ? "Fast"
                     : timingMode === "fixed"
                       ? `${fixedDelayMs} ms`
                       : step.delayMs > 0
                         ? `After +${step.delayMs} ms`
-                        : index === recordedSteps.length - 1 ? "Waiting…" : "Next"}</small>
+                        : index === recordedSteps.length - 1 ? "Waiting…" : "Next")}</small>
                 </li>
               ))}
             </ol>
@@ -2166,27 +2169,27 @@ export function KsnakeMacroCard({ snapshot }: { snapshot: ControlSnapshot }): Re
           ) : null}
           {draft.steps.map((step, index) => (
             <div className="ksnake-macro-step" key={`${slot}-${index}`}>
-              <span className="ksnake-macro-step-number">{String(index + 1).padStart(2, "0")}</span>
+              <span className="ksnake-macro-step-number">{displayText(locale, String(index + 1).padStart(2, "0"))}</span>
               <label className="ksnake-macro-step-field">
                 <span>{t(locale, "macro.colInput")}</span>
                 <select
-                  aria-label={`Macro ${slot + 1} step ${index + 1} type`}
+                  aria-label={displayText(locale, `Macro ${slot + 1} step ${index + 1} type`)}
                   value={step.type}
                   disabled={controlsDisabled}
                   onChange={(event) => updateStep(index, { type: Number(event.currentTarget.value) as KsnakeMacroStep["type"] })}
                 >
-                  {KSNAKE_MACRO_TYPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                  {KSNAKE_MACRO_TYPES.map(([value, label]) => <option key={value} value={value}>{displayText(locale, label)}</option>)}
                 </select>
               </label>
               <label className="ksnake-macro-step-field">
                 <span>{t(locale, "macro.colAction")}</span>
                 <select
-                  aria-label={`Macro ${slot + 1} step ${index + 1} action`}
+                  aria-label={displayText(locale, `Macro ${slot + 1} step ${index + 1} action`)}
                   value={step.action}
                   disabled={controlsDisabled}
                   onChange={(event) => updateStep(index, { action: Number(event.currentTarget.value) as KsnakeMacroStep["action"] })}
                 >
-                  {KSNAKE_MACRO_ACTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                  {KSNAKE_MACRO_ACTIONS.map(([value, label]) => <option key={value} value={value}>{displayText(locale, label)}</option>)}
                 </select>
               </label>
               <label className="ksnake-macro-number ksnake-macro-code-field">{t(locale, "macro.colCode")}
@@ -2209,7 +2212,7 @@ export function KsnakeMacroCard({ snapshot }: { snapshot: ControlSnapshot }): Re
                   onChange={(event) => updateStep(index, { delayMs: Math.min(65535, Math.max(0, Number(event.currentTarget.value) || 0)) })}
                 />
               </label>
-              <small className="ksnake-macro-preview" title={ksnakeMacroCodeLabel(step.type, step.code)}>{ksnakeMacroCodeLabel(step.type, step.code)}</small>
+              <small className="ksnake-macro-preview" title={displayText(locale, ksnakeMacroCodeLabel(step.type, step.code))}>{displayText(locale, ksnakeMacroCodeLabel(step.type, step.code))}</small>
               <button type="button" className="ksnake-macro-delete" disabled={controlsDisabled} onClick={() => removeStep(index)} aria-label={tp(locale, "macro.removeStep", { n: index + 1 })} title={t(locale, "macro.removeStepTitle")}>
                 <Trash2 size={16} strokeWidth={2} aria-hidden="true" />
               </button>
@@ -2313,7 +2316,7 @@ export function WallhackMacroCard({ snapshot }: { snapshot: ControlSnapshot }): 
     return (
       <article id="wallhack-macro-settings" className="setting-card">
         <div className="setting-heading compact"><div><p>{t(locale, "macro.overline")}</p><h2>{t(locale, "macro.build")}</h2></div></div>
-        <p className="field-note">{snapshot.wallhackMacrosError}</p>
+        <p className="field-note">{displayText(locale, snapshot.wallhackMacrosError)}</p>
         <div className="setting-action"><button type="button" onClick={() => control.loadWallhackMacros()}>{t(locale, "set.retry")}</button></div>
       </article>
     );
@@ -2355,7 +2358,7 @@ export function WallhackMacroCard({ snapshot }: { snapshot: ControlSnapshot }): 
         <select value={slot} disabled={disabled} onChange={(event) => setSlot(Number(event.currentTarget.value))}>
           {profiles.map((profile, index) => {
             const stepCount = index === slot ? draft.length : profile?.length ?? 0;
-            return <option key={index} value={index}>{t(locale, "macro.option")} {index + 1}{stepCount ? ` · ${tp(locale, "macro.steps", { n: stepCount })}` : ` · ${t(locale, "macro.empty")}`}</option>;
+            return <option key={index} value={index}>{t(locale, "macro.option")} {index + 1}{displayText(locale, stepCount ? ` · ${tp(locale, "macro.steps", { n: stepCount })}` : ` · ${t(locale, "macro.empty")}`)}</option>;
           })}
         </select>
       </label>
@@ -2372,7 +2375,7 @@ export function WallhackMacroCard({ snapshot }: { snapshot: ControlSnapshot }): 
                   disabled={disabled}
                   onChange={(event) => changeStepType(index, event.currentTarget.value as WallhackMacroStepType)}
                 >
-                  {WALLHACK_MACRO_STEP_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+                  {WALLHACK_MACRO_STEP_TYPES.map((type) => <option key={type} value={type}>{displayText(locale, type)}</option>)}
                 </select>
               </label>
               {(step.event.type === "keyDown" || step.event.type === "keyUp") ? (
@@ -2409,7 +2412,7 @@ export function WallhackMacroCard({ snapshot }: { snapshot: ControlSnapshot }): 
                     }}
                   >
                     {["left", "right", "middle", "back", "forward"].map((button) => (
-                      <option key={button} value={button}>{button}</option>
+                      <option key={button} value={button}>{displayText(locale, button)}</option>
                     ))}
                   </select>
                 </label>
@@ -2478,7 +2481,7 @@ export function WallhackMacroCard({ snapshot }: { snapshot: ControlSnapshot }): 
                   })}
                 />
               </label>
-              <small className="ksnake-macro-preview" title={wallhackMacroStepLabel(step)}>{wallhackMacroStepLabel(step)}</small>
+              <small className="ksnake-macro-preview" title={displayText(locale, wallhackMacroStepLabel(step))}>{displayText(locale, wallhackMacroStepLabel(step))}</small>
               <button type="button" className="ksnake-macro-delete" disabled={disabled} onClick={() => removeStep(index)} aria-label={tp(locale, "macro.removeStep", { n: index + 1 })} title={t(locale, "macro.removeStepTitle")}>
                 <Trash2 size={16} strokeWidth={2} aria-hidden="true" />
               </button>
@@ -2533,7 +2536,7 @@ export function ButtonMappingCard({ snapshot }: { snapshot: ControlSnapshot }): 
   const fixed = new Set((status as unknown as { fixedButtons?: readonly string[] }).fixedButtons ?? []);
   return (
     <article id="button-mapping-settings" className="setting-card">
-      <div className="setting-heading compact"><div><p>BUTTONS</p><h2>{t(locale, "map.remap")}</h2></div></div>
+      <div className="setting-heading compact"><div><p>{displayText(locale, "BUTTONS")}</p><h2>{t(locale, "map.remap")}</h2></div></div>
       <div className="button-map-list">
         {Object.entries(status.buttonMappings).map(([button, deviceAssigned], index) => {
           const assigned = resettingButtons || pendingButtons.has(`button-${button}`)
@@ -2544,10 +2547,10 @@ export function ButtonMappingCard({ snapshot }: { snapshot: ControlSnapshot }): 
           return (
             <label key={button} className={`button-map-row${isFixed ? " is-fixed" : ""}`} htmlFor={selectId}>
               <span className="button-map-control">
-                <span className="button-map-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-                <span className="button-map-name">{button}</span>
+                <span className="button-map-index" aria-hidden="true">{displayText(locale, String(index + 1).padStart(2, "0"))}</span>
+                <span className="button-map-name">{displayText(locale, button)}</span>
               </span>
-              <span className="button-map-connector" aria-hidden="true">to</span>
+              <span className="button-map-connector" aria-hidden="true">{displayText(locale, "to")}</span>
               <span className="button-map-select-wrap">
                 <select
                   id={selectId}
@@ -2564,8 +2567,8 @@ export function ButtonMappingCard({ snapshot }: { snapshot: ControlSnapshot }): 
                   }}
                 >
                   {/* A macro or an assignment this build cannot name still shows. */}
-                  {!options.includes(assigned) && <option value="">{assigned}</option>}
-                  {options.map((option) => <option key={option} value={option}>{option}</option>)}
+                  {!options.includes(assigned) && <option value="">{displayText(locale, assigned)}</option>}
+                  {options.map((option) => <option key={option} value={option}>{displayText(locale, option)}</option>)}
                 </select>
               </span>
             </label>
@@ -2579,9 +2582,7 @@ export function ButtonMappingCard({ snapshot }: { snapshot: ControlSnapshot }): 
             className="button-map-reset"
             disabled={snapshot.settingInProgress || snapshot.pending.busy}
             onClick={control.resetKsnakeButtonMappings}
-          >
-            Reset to default
-          </button>
+          > {displayText(locale, "Reset to default")} </button>
         </div>
       ) : null}
       {!selectedM2NexProfile ? (
@@ -2605,7 +2606,7 @@ export function PowerModeCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
   if (!modes?.length) return null;
   return (
     <article id="power-mode-settings" className="setting-card">
-      <div className="setting-heading compact"><div><p>SENSOR</p><h2>{t(locale, "pow.mode")}</h2></div></div>
+      <div className="setting-heading compact"><div><p>{displayText(locale, "SENSOR")}</p><h2>{t(locale, "pow.mode")}</h2></div></div>
       <Segmented
         className={modes.length === 3 ? "three" : undefined}
         ariaLabel={t(locale, "pow.perfMode")}

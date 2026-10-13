@@ -3,6 +3,7 @@ import type { I18nKey } from "./i18n";
 /** Vietnamese strings, split into a lazy chunk so the initial bundle
     ships English only. Loaded via ensureLocale() before first use. */
 export const vi: Record<I18nKey, string> = {
+  "set.turkish": "Türkçe",
   "luna.angleSnap": "Hiệu chỉnh đường thẳng",
   "luna.competitiveMode": "Chế độ thi đấu",
   "luna.trackingMode": "Chế độ theo dõi",

@@ -1,3 +1,4 @@
+import { displayText } from "../../../i18n";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import * as control from "../../../device/controller";
 import type { ControlSnapshot } from "../../../device/types";
@@ -75,8 +76,8 @@ export function TeevolutionProfileCard({ snapshot }: { snapshot: ControlSnapshot
         >
           <span className="profile-summary-text">
             <span className="profile-summary-label">{t(locale, "prof.editing")}</span>
-            <strong>{summaryName}</strong>
-            <small>{liveDetail || t(locale, "prof.profileStores")}</small>
+            <strong>{displayText(locale, summaryName)}</strong>
+            <small>{displayText(locale, liveDetail || t(locale, "prof.profileStores"))}</small>
           </span>
           <i className="profile-summary-chevron" aria-hidden="true" />
         </button>
@@ -86,9 +87,7 @@ export function TeevolutionProfileCard({ snapshot }: { snapshot: ControlSnapshot
         <div className="profile-disclosure-inner" ref={inner}>
           <div id="teevolution-profile-list">
             <div className="profile-rule" />
-            <small className="profile-list-hint">
-              Click a profile to switch the mouse to it.
-            </small>
+            <small className="profile-list-hint"> {displayText(locale, "Click a profile to switch the mouse to it.")} </small>
             {Array.from({ length: count }, (_, index) => {
               const value = index + 1;
               const running = value === active;
@@ -99,7 +98,7 @@ export function TeevolutionProfileCard({ snapshot }: { snapshot: ControlSnapshot
                   <button
                     type="button"
                     disabled={busy}
-                    title={running ? t(locale, "prof.runningProfile") : t(locale, "prof.switchProfile")}
+                    title={displayText(locale, running ? t(locale, "prof.runningProfile") : t(locale, "prof.switchProfile"))}
                     className="profile-row-open"
                     onClick={() => {
                       if (!running) void control.applyProfileSelection(value);
@@ -108,18 +107,18 @@ export function TeevolutionProfileCard({ snapshot }: { snapshot: ControlSnapshot
                     <span className={`device-dot${running ? "" : " is-idle"}`} />
                     <span className="profile-row-text">
                       <strong>
-                        {label}{tags ? ` · ${tags}` : ""}
+                        {displayText(locale, label)}{displayText(locale, tags ? ` · ${tags}` : "")}
                       </strong>
                       <small>
-                        {running ? liveDetail || "stored on the mouse" : "stored on the mouse"}
+                        {displayText(locale, running ? liveDetail || "stored on the mouse" : "stored on the mouse")}
                       </small>
                     </span>
                   </button>
                   <button
                     type="button"
                     disabled={busy || running}
-                    title={running ? t(locale, "prof.runningProfile") : t(locale, "prof.switchProfile")}
-                    aria-label={`Switch to profile ${value}`}
+                    title={displayText(locale, running ? t(locale, "prof.runningProfile") : t(locale, "prof.switchProfile"))}
+                    aria-label={displayText(locale, `Switch to profile ${value}`)}
                     aria-pressed={running}
                     className={`icon-button${running ? " is-active" : ""}`}
                     onClick={() => void control.applyProfileSelection(value)}
@@ -134,7 +133,7 @@ export function TeevolutionProfileCard({ snapshot }: { snapshot: ControlSnapshot
             <div className="profile-button-editor">
               <div className="profile-button-heading">
                 <div>
-                  <p>BUTTONS</p>
+                  <p>{displayText(locale, "BUTTONS")}</p>
                   <h2>{t(locale, "prof.assign")}</h2>
                   <small>{t(locale, "prof.assignBody")}</small>
                 </div>
@@ -143,11 +142,11 @@ export function TeevolutionProfileCard({ snapshot }: { snapshot: ControlSnapshot
                 {Object.entries(mappings).map(([button, assigned], index) => (
                   <div key={button} className="assignment-card">
                     <span className="assignment-button-number">{index + 1}</span>
-                    <span className="assignment-button-name">{button}</span>
+                    <span className="assignment-button-name">{displayText(locale, button)}</span>
                     <span className="assignment-select-wrap">
                       <OptionMenu
                         id={`teevolution-button-${button.toLowerCase()}-select`}
-                        ariaLabel={`${button} ${t(locale, "prof.assign")}`}
+                        ariaLabel={displayText(locale, `${button} ${t(locale, "prof.assign")}`)}
                         options={[
                           ...(!options.includes(assigned) ? [{ value: "", label: assigned, disabled: true }] : []),
                           ...options.map((option) => ({ value: option, label: option })),

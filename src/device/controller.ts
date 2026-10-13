@@ -57,7 +57,7 @@ import {
   type InterfacePreferences,
   type InterfaceTheme,
 } from "../interface-preferences";
-import { batteryStateText, connectionText, ensureLocale, layerLabel, t, tp, type I18nKey } from "../i18n";
+import { displayText, batteryStateText, connectionText, ensureLocale, layerLabel, t, tp, type I18nKey } from "../i18n";
 import {
   EGG_BUTTON_NAMES,
   EggOp1HidClient,
@@ -906,7 +906,7 @@ export function createM2NexProfile(): void {
   if (!isNoirProfileDevice() || !m2nexProfiles?.[activeM2NexProfile]) return;
   const current = m2nexProfiles[activeM2NexProfile];
   const suggested = `Profile ${activeM2NexProfile + 1}`;
-  const name = window.prompt("Profile name", suggested)?.trim();
+  const name = window.prompt(displayText(interfacePreferences.locale, "Profile name"), suggested)?.trim();
   if (!name) return;
   m2nexProfiles = m2nexProfiles.map((profile, index) => index === activeM2NexProfile
     ? { ...cloneM2NexProfile(current), name }
@@ -4458,9 +4458,9 @@ function confirmDiscardingProfileEdits(target: number | "host"): boolean {
     ? "Host"
     : onboardProfiles?.find((profile) => profile.sector === target)?.name ?? `Profile ${target}`;
   return window.confirm(
-    `${from} has ${staged.length} change${staged.length === 1 ? "" : "s"} you have not flashed:\n\n`
-    + `${staged.map((change) => `  • ${change.label}`).join("\n")}\n\n`
-    + `Opening ${to} discards ${staged.length === 1 ? "it" : "them"}. Continue?`,
+    displayText(interfacePreferences.locale, `${from} has ${staged.length} change${staged.length === 1 ? "" : "s"} you have not flashed:\n\n`)
+    + `${staged.map((change) => `  • ${displayText(interfacePreferences.locale, change.label)}`).join("\n")}\n\n`
+    + displayText(interfacePreferences.locale, `Opening ${to} discards ${staged.length === 1 ? "it" : "them"}. Continue?`),
   );
 }
 
@@ -4870,9 +4870,9 @@ export async function toggleOnboardProfileEnabled(sector: number, enabled: boole
   if (!client || refreshInProgress || settingInProgress) return;
 
   const confirmed = window.confirm(
-    `${enabled ? "Enable" : "Disable"} profile ${sector}?\n\n`
-    + "This writes to the mouse's flash memory — one write cycle per change. "
-    + "OpenMouse has not yet verified this write sequence on hardware; G HUB can restore the profiles if anything goes wrong.",
+    displayText(interfacePreferences.locale, `${enabled ? "Enable" : "Disable"} profile ${sector}?\n\n`)
+    + displayText(interfacePreferences.locale, "This writes to the mouse's flash memory — one write cycle per change. ")
+    + displayText(interfacePreferences.locale, "OpenMouse has not yet verified this write sequence on hardware; G HUB can restore the profiles if anything goes wrong."),
   );
   if (!confirmed) return;
 
@@ -4958,7 +4958,7 @@ export function renameOnboardProfile(sector: number): void {
   if (editedProfile !== sector) openOnboardProfile(sector);
 
   const current = stagedProfileName ?? entry.name ?? "";
-  const input = window.prompt(`Profile name (up to ${maxLength} characters)`, current);
+  const input = window.prompt(displayText(interfacePreferences.locale, `Profile name (up to ${maxLength} characters)`), current);
   if (input === null) return;
 
   const invalid = validateProfileName(input, maxLength);
@@ -4994,9 +4994,9 @@ export async function resetLogitechProfiles(): Promise<void> {
     ? "\n\nYour staged, unflashed changes will also be discarded."
     : "";
   const confirmed = window.confirm(
-    "Delete every onboard profile and restore Logitech defaults?\n\n"
+    displayText(interfacePreferences.locale, "Delete every onboard profile and restore Logitech defaults?\n\n"
     + "This permanently erases all stored DPI stages, polling rates, lift-off distances, button assignments, G-Shift mappings, lighting, names, timeouts and every other byte in onboard profile memory. Fresh default profiles will be written back, with profile 1 as the only enabled profile. This cannot be undone in OpenMouse."
-    + stagedWarning,
+    + stagedWarning),
   );
   if (!confirmed) return;
 
@@ -5040,9 +5040,9 @@ export async function setUpLogitechProfiles(): Promise<void> {
   if (onboardProfiles === null || onboardProfiles.length > 0) return;
 
   const confirmed = window.confirm(
-    "This mouse has no onboard profiles yet.\n\n"
+    displayText(interfacePreferences.locale, "This mouse has no onboard profiles yet.\n\n"
     + "Set them up now? OpenMouse will write the Logitech factory profiles into the mouse's memory, with profile 1 active, without G HUB having to link it first.\n\n"
-    + "This replays the sequence captured from G HUB's own reset. It has not been confirmed on a mouse G HUB has never linked.",
+    + "This replays the sequence captured from G HUB's own reset. It has not been confirmed on a mouse G HUB has never linked."),
   );
   if (!confirmed) return;
 
@@ -6695,7 +6695,7 @@ async function showFixturePreview(name: PreviewMode): Promise<void> {
     installPreviewNapeKeymap(layer, true);
   }
   setConnectionButtons(true, "Preview mode");
-  setReadStatus(st("ctl.previewLabel", { label: fixture.label }));
+  setReadStatus(st("ctl.previewLabel", { label: displayText(interfacePreferences.locale, fixture.label) }));
 }
 
 export function start(): void {

@@ -1,3 +1,4 @@
+import { displayText } from "../i18n";
 import type { ReactNode } from "react";
 import * as control from "../device/controller";
 import type { ControlSnapshot } from "../device/types";
@@ -40,8 +41,8 @@ export function LogitechDetails({ snapshot }: { snapshot: ControlSnapshot }): Re
           <div id="logitech-detail-list">
             {items.map(([label, value]) => (
               <div key={label}>
-                <small>{label.toUpperCase()}</small>
-                <span>{value}</span>
+                <small>{displayText(locale, label).toLocaleUpperCase(locale)}</small>
+                <span>{displayText(locale, value)}</span>
               </div>
             ))}
           </div>
@@ -79,8 +80,8 @@ export function Diagnostics({
           <div id="device-debug-overview" className="device-debug-overview">
             {diagnostics.overview.map(([label, value]) => (
               <div key={label}>
-                <small>{label.toUpperCase()}</small>
-                <span>{value}</span>
+                <small>{displayText(locale, label).toLocaleUpperCase(locale)}</small>
+                <span>{displayText(locale, value)}</span>
               </div>
             ))}
           </div>
@@ -97,16 +98,16 @@ export function Diagnostics({
               <button id="capture-open" type="button" onClick={onOpenCapture}>{t(locale, "diag.verifyFormat")}</button>
             ) : null}
             <span id="diagnostic-download-status" role="status" aria-live="polite">
-              {diagnostics.downloadStatus}
+              {displayText(locale, diagnostics.downloadStatus)}
             </span>
           </div>
           <details id="device-debug-readlog" className="device-debug-raw">
             <summary>{t(locale, "diag.reads")}</summary>
-            <pre id="device-debug-reads" className="device-debug-snapshot">{diagnostics.reads}</pre>
+            <pre id="device-debug-reads" className="device-debug-snapshot">{displayText(locale, diagnostics.reads)}</pre>
           </details>
           <details id="device-debug-raw" className="device-debug-raw">
             <summary>{t(locale, "diag.rawSnapshot")}</summary>
-            <pre id="device-debug-snapshot" className="device-debug-snapshot">{diagnostics.snapshot}</pre>
+            <pre id="device-debug-snapshot" className="device-debug-snapshot">{displayText(locale, diagnostics.snapshot)}</pre>
           </details>
         </article>
       </Collapsible>

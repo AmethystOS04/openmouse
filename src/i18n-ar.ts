@@ -3,6 +3,7 @@ import type { I18nKey } from "./i18n.ts";
 /** Arabic strings, split into a lazy chunk so the initial bundle ships
     English only. Loaded via ensureLocale() before first use. */
 export const ar: Record<I18nKey, string> = {
+  "set.turkish": "Türkçe",
   "luna.angleSnap": "تصحيح الخط المستقيم",
   "luna.competitiveMode": "وضع المنافسة",
   "luna.trackingMode": "وضع التتبع",
