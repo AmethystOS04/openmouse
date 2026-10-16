@@ -16,7 +16,6 @@ import { t, tp } from "../../i18n";
 import type { InterfaceLocale } from "../../interface-preferences";
 import { RateSlider, Segmented, SwitchButton } from "../ui";
 import { fullChargeHoursAt } from "../../battery-history";
-import { BounceCheckDialog } from "../BounceCheckDialog";
 
 const LOD_LEVELS: readonly LiftOffLevel[] = ["Low", "Medium", "High"];
 
@@ -332,16 +331,6 @@ function LiftOffScale({ snapshot }: { snapshot: ControlSnapshot }): ReactNode {
   );
 }
 
-function BounceCheck({ locale, value, canApply }: { locale: InterfaceLocale; value: number; canApply: boolean }): ReactNode {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <button type="button" className="icon-button bounce-check-button" onClick={() => setOpen(true)}>{displayText(locale, "Check for bounce")}</button>
-      <BounceCheckDialog open={open} locale={locale} bunnyHopMs={value} canApply={canApply} onClose={() => setOpen(false)} />
-    </>
-  );
-}
-
 // While a flash runs the profile is briefly unreadable; keep showing the last good one.
 let lastBunnyHop: ControlSnapshot | null = null;
 
@@ -396,7 +385,6 @@ export function BunnyHop({ snapshot: live, standalone = false }: { snapshot: Con
           ? t(locale, "perf.bunnyReadonly")
           : tp(locale, "perf.bunnyNote", { min: BUNNY_HOP_LIMITS.minMs, max: BUNNY_HOP_LIMITS.maxMs, step: BUNNY_HOP_LIMITS.stepMs }))}
       </small>
-      {standalone ? <BounceCheck locale={locale} value={value} canApply={!locked && !snapshot.settingInProgress} /> : null}
     </div>
   );
   return standalone ? (
