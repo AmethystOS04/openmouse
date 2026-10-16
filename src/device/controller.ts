@@ -1838,10 +1838,10 @@ export function applyGameProfileSnapshot(snapshot: GameProfileSnapshot): void {
   if (s.dpiLedSpeed != null) applyTeevolutionDpiLighting("speed", s.dpiLedSpeed);
   if (s.dpiLedSleepTimeout != null) applyDpiLightingSleepTimeout(s.dpiLedSleepTimeout);
 
-  // Handedness first: the firmware refuses to move whichever button is
-  // primary in the mode it is in, so a left-handed mapping for the left button
-  // can only be written after the swap.
-  if (typeof s.eggLeftHanded === "boolean") applyEggLeftHanded(s.eggLeftHanded);
+  // Handedness is deliberately not part of a game profile: the firmware
+  // rewrites both main buttons to their swapped defaults when it changes, so a
+  // profile could neither keep nor restore a custom mapping — see
+  // GAME_PROFILE_FIELDS and applyEggLeftHanded.
   if (typeof s.slamclickFilter === "boolean") applyEggFilter("slamclick", s.slamclickFilter);
   if (typeof s.motionJitterFilter === "boolean") applyEggFilter("motionJitter", s.motionJitterFilter);
   if (s.leftSpdtMode) applyEggSpdtMode("left", s.leftSpdtMode);

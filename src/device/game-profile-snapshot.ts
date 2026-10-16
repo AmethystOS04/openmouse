@@ -72,7 +72,9 @@ export const GAME_PROFILE_FIELDS = [
   "eggAngleTuning",
   "eggForceMaxFps",
   "eggLedLiftOffDisabled",
-  "eggLeftHanded",
+  // Handedness is not here: the firmware rewrites both main buttons to their
+  // swapped defaults whenever it changes, so a profile that carried it could
+  // not put a custom mapping back when the game exits.
   "buttonMappings",
   "razerButtonMappings",
   "finalmouseDongleLedMode",

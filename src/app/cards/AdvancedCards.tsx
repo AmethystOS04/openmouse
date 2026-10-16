@@ -1353,7 +1353,7 @@ export function EggHandedCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
   const locale = snapshot.preferences.locale;
   return (
     <article id="egg-handed-settings" className="setting-card">
-      <div className="setting-heading compact"><div><p>{displayText(locale, "CLICK")}</p><h2>{t(locale, "adv.eggHanded")}</h2></div></div>
+      <div className="setting-heading compact"><div><p>{displayText(locale, "CLICK")}</p><h2>{t(locale, "adv.eggHandedTitle")}</h2></div></div>
       <SwitchRow
         id="egg-handed-toggle"
         label={t(locale, "adv.eggHanded")}
@@ -1361,6 +1361,7 @@ export function EggHandedCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
         onChange={(next) => control.applyEggLeftHanded(next)}
       />
       <small className="setting-note">{t(locale, "adv.eggHandedNote")}</small>
+      <small className="setting-note">{t(locale, "adv.eggHandedReset")}</small>
     </article>
   );
 }
@@ -1664,26 +1665,33 @@ export function EggButtonCard({ snapshot }: { snapshot: ControlSnapshot }): Reac
               : index === 1 ? status.rightSpdtMode !== "Off" : false;
             const current = mappings[index];
             const known = EGG_BUTTON_MAPPINGS.includes(current as EggButtonMapping);
+            // The mouse reports a multiclick filter per physical click button
+            // only — five of the seven names, the wheel pair excluded — and
+            // refuses a write for the rest, so those tiles keep the mapping
+            // row and lose the debounce field.
+            const hasFilter = index < filters.length;
             return (
               <div key={name}>
                 <strong>{displayText(locale, name)}</strong>
-                <label className="egg-tile-label stacked">
-                  {t(locale, "adv.multiclick")}
-                  <input
-                    className="egg-tile-field"
-                    type="number"
-                    min={0}
-                    max={25}
-                    step={1}
-                    defaultValue={filters[index]}
-                    key={`multiclick-${index}-${filters[index]}`}
-                    disabled={gxActive}
-                    onChange={(event) => control.applyEggMulticlick(
-                      index as EggButtonIndex,
-                      Number(event.currentTarget.value),
-                    )}
-                  />
-                </label>
+                {hasFilter ? (
+                  <label className="egg-tile-label stacked">
+                    {t(locale, "adv.multiclick")}
+                    <input
+                      className="egg-tile-field"
+                      type="number"
+                      min={0}
+                      max={25}
+                      step={1}
+                      defaultValue={filters[index]}
+                      key={`multiclick-${index}-${filters[index]}`}
+                      disabled={gxActive}
+                      onChange={(event) => control.applyEggMulticlick(
+                        index as EggButtonIndex,
+                        Number(event.currentTarget.value),
+                      )}
+                    />
+                  </label>
+                ) : null}
                 <div className="egg-tile-label stacked">
                   <span>{t(locale, "adv.mapping")}</span>
                   <OptionMenu
