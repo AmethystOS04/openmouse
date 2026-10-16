@@ -331,7 +331,7 @@ export const vi: Record<I18nKey, string> = {
   "perf.bunnyHop": "Bunny hop",
   "perf.bunnyTime": "Thời gian bunny hop tính bằng mili giây",
   "perf.bunnyReadonly": "Định dạng profile này chưa được xác minh trên phần cứng nên chỉ có thể đọc.",
-  "perf.bunnyNote": "Bỏ qua các lần nhấp lặp lại rơi trong khoảng thời gian này, để switch bị bounce khi spam click nhanh chỉ được tính một lần. Thời gian dài hơn lọc mạnh hơn; ngắn hơn cho phép các cú click nhanh thật sự đi qua. {min}–{max} ms theo bước {step}.",
+  "perf.bunnyNote": "Bỏ qua nấc cuộn đầu tiên của con lăn trừ khi có nấc thứ hai trong khoảng thời gian này, để một lần cuộn vô tình không kích hoạt lệnh nhảy gán cho con lăn. Không ảnh hưởng đến thao tác nhấp. {min}–{max} ms theo bước {step}.",
   "perf.hybrid": "Hybrid",
   "perf.opticalOnly": "Chỉ quang học",
   "perf.lightforceMode": "Chế độ switch LightForce",

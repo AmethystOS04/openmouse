@@ -385,7 +385,7 @@ const en = {
   "perf.bunnyHop": "Bunny hop",
   "perf.bunnyTime": "Bunny hop time in milliseconds",
   "perf.bunnyReadonly": "This profile format has not been verified on hardware, so it is read-only.",
-  "perf.bunnyNote": "Ignores repeat clicks that land within this window, so a switch that bounces during fast click spam only registers once. Longer times filter harder; shorter times let genuine fast clicks through. {min}–{max} ms in steps of {step}.",
+  "perf.bunnyNote": "Ignores the first scroll-wheel step unless a second one follows within this window, so a stray tick does not trigger a jump bound to the wheel. It does not affect clicks. {min}–{max} ms in steps of {step}.",
   "perf.hybrid": "Hybrid",
   "perf.opticalOnly": "Optical only",
   "perf.lightforceMode": "LightForce switch mode",
