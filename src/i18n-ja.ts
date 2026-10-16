@@ -381,7 +381,7 @@ export const ja: Record<I18nKey, string> = {
   "perf.bunnyHop": "バニーホップ",
   "perf.bunnyTime": "バニーホップ時間（ミリ秒）",
   "perf.bunnyReadonly": "このプロファイル形式は実機で検証されていないため、読み取り専用です。",
-  "perf.bunnyNote": "この時間枠内に2回目のホイール入力がない限り最初のスクロールホイール入力を無視し、誤ってホイールを回してもホイールに割り当てたジャンプが発動しないようにします。クリックには影響しません。 {min}〜{max} ミリ秒、ステップ幅{step}。",
+  "perf.bunnyNote": "この時間枠内に2回目のホイール入力がない限り最初のスクロールホイール入力を無視し、誤ってホイールを回してもホイールに割り当てたジャンプが発動しないようにします。クリックには影響しません。{min}〜{max} ミリ秒、ステップ幅{step}。",
   "perf.hybrid": "ハイブリッド",
   "perf.opticalOnly": "光学のみ",
   "perf.lightforceMode": "LightForceスイッチモード",
