@@ -1389,9 +1389,18 @@ export function applyGameProfileSnapshot(snapshot: GameProfileSnapshot): void {
     else applySensorMode(s.sensorMode);
   }
   if (s.powerMode) applyPowerMode(s.powerMode);
+  // An Egg mouse whose 8K mode drops Motion Sync cannot take both from one
+  // profile: the driver clears Motion Sync when it writes 8,000 Hz and refuses
+  // to turn it back on there, so staging both would abort the flash after the
+  // rate had already landed. The hardware's answer is the only one, so the
+  // request follows it rather than being refused mid-flash.
+  const motionSyncAt8k = status.eggMotionSyncAt8k === false
+    && (s.pollingRateHz ?? status.pollingRateHz) >= 8000;
   for (const field of PULSAR_TOGGLE_FIELDS) {
-    const value = s[field];
-    if (typeof value === "boolean") applyPulsarToggle(field, value);
+    let value = s[field];
+    if (typeof value !== "boolean") continue;
+    if (field === "motionSync" && motionSyncAt8k) value = false;
+    applyPulsarToggle(field, value);
   }
   if (s.debounceMs != null) applyPulsarValue("debounce", s.debounceMs);
   if (s.sleepTimeout != null) applyPulsarValue("sleep", s.sleepTimeout);
@@ -1423,6 +1432,10 @@ export function applyGameProfileSnapshot(snapshot: GameProfileSnapshot): void {
   if (s.dpiLedSpeed != null) applyTeevolutionDpiLighting("speed", s.dpiLedSpeed);
   if (s.dpiLedSleepTimeout != null) applyDpiLightingSleepTimeout(s.dpiLedSleepTimeout);
 
+  // Handedness first: the firmware refuses to move whichever button is
+  // primary in the mode it is in, so a left-handed mapping for the left button
+  // can only be written after the swap.
+  if (typeof s.eggLeftHanded === "boolean") applyEggLeftHanded(s.eggLeftHanded);
   if (typeof s.slamclickFilter === "boolean") applyEggFilter("slamclick", s.slamclickFilter);
   if (typeof s.motionJitterFilter === "boolean") applyEggFilter("motionJitter", s.motionJitterFilter);
   if (s.leftSpdtMode) applyEggSpdtMode("left", s.leftSpdtMode);
@@ -1437,7 +1450,6 @@ export function applyGameProfileSnapshot(snapshot: GameProfileSnapshot): void {
   if (s.eggAngleTuning != null) applyEggAngleTuning(s.eggAngleTuning);
   if (typeof s.eggForceMaxFps === "boolean") applyEggForceMaxFps(s.eggForceMaxFps);
   if (typeof s.eggLedLiftOffDisabled === "boolean") applyEggLedLiftOff(s.eggLedLiftOffDisabled);
-  if (typeof s.eggLeftHanded === "boolean") applyEggLeftHanded(s.eggLeftHanded);
 
   for (const [button, action] of Object.entries(s.buttonMappings ?? {})) applyDeviceButtonMapping(button, action);
   for (const [control, mapping] of Object.entries(s.razerButtonMappings ?? {})) {

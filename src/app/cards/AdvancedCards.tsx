@@ -23,7 +23,7 @@ import type { KsnakeMacroProfile, KsnakeMacroStep } from "@openmouse/protocol/ks
 import { isPulsarProProtocol } from "../../device/traits";
 import * as control from "../../device/controller";
 import { PULSAR_SLEEP_OPTIONS } from "../../device/controller";
-import { selectableValues, sleepLabel, sleepParts, sleepTotalSeconds, valuesWithCurrent, KEYCHRON_SLEEP_MAX_HOURS, KEYCHRON_SLEEP_MAX_SECONDS, KEYCHRON_SLEEP_MIN_SECONDS } from "../../device/options";
+import { selectableValues, sleepLabel, sleepParts, sleepTotalSeconds, snapCpiToDevice, valuesWithCurrent, KEYCHRON_SLEEP_MAX_HOURS, KEYCHRON_SLEEP_MAX_SECONDS, KEYCHRON_SLEEP_MIN_SECONDS, type CpiLimits } from "../../device/options";
 import type { ControlSnapshot } from "../../device/types";
 import { t, tp } from "../../i18n";
 import type { InterfaceLocale } from "../../interface-preferences";
@@ -1011,7 +1011,7 @@ export function EggV2SensorCard({ snapshot }: { snapshot: ControlSnapshot }): Re
     <article id="egg-v2-sensor-settings" className="setting-card">
       <div className="setting-heading compact"><div><p>SENSOR</p><h2>{t(locale, "adv.eggSensor")}</h2></div></div>
       <div className="field-label">
-        <span>{t(locale, "adv.eggAngleTuning")}</span>
+        <label htmlFor="egg-angle-tuning">{t(locale, "adv.eggAngleTuning")}</label>
         <input
           id="egg-angle-tuning"
           className="egg-tile-field"
@@ -1132,7 +1132,7 @@ function CpiStageRow({
   index: number;
   stage: { x: number; y: number };
   locale: InterfaceLocale;
-  limits: { min: number; max: number; stepLow: number; stepHigh: number };
+  limits: CpiLimits;
 }): ReactNode {
   const [split, setSplit] = useState(stage.x !== stage.y);
   const [x, setX] = useState(stage.x);
@@ -1142,9 +1142,17 @@ function CpiStageRow({
     setX(stage.x);
     setY(stage.y);
   }, [stage.x, stage.y]);
-  // The protocol's own step rule: the fine step runs up to 10,000 CPI on the
-  // v2 generation, whose 10-CPI resolution below it has no match above.
-  const stepFor = (value: number): number => (value <= 10_000 ? limits.stepLow : limits.stepHigh);
+  // HTML measures `step` from `min`, and the v2 grid changes base above 10,000
+  // CPI — 10-CPI below it, 50 above. A 50 step on a 10 minimum would flag every
+  // valid value as a mismatch and spin to ones the mouse rejects, so the fields
+  // keep the fine step and the mouse's own rounding is applied on Apply.
+  const applyStage = (): void => {
+    const nextX = snapCpiToDevice(x, limits);
+    const nextY = split ? snapCpiToDevice(y, limits) : nextX;
+    setX(nextX);
+    setY(nextY);
+    control.applyEggCpiStage(index, nextX, nextY);
+  };
   return (
     <div>
       <strong>{tp(locale, "adv.stage", { n: index + 1 })}</strong>
@@ -1160,7 +1168,7 @@ function CpiStageRow({
             type="number"
             min={limits.min}
             max={limits.max}
-            step={stepFor(x)}
+            step={limits.stepLow}
             value={x}
             onChange={(event) => setX(Number(event.currentTarget.value))}
           />
@@ -1172,14 +1180,14 @@ function CpiStageRow({
             type="number"
             min={limits.min}
             max={limits.max}
-            step={stepFor(y)}
+            step={limits.stepLow}
             value={y}
             disabled={!split}
             onChange={(event) => setY(Number(event.currentTarget.value))}
           />
         </label>
       </div>
-      <button type="button" onClick={() => control.applyEggCpiStage(index, x, split ? y : x)}>
+      <button type="button" onClick={applyStage}>
         {t(locale, "adv.applyStage")}
       </button>
     </div>
