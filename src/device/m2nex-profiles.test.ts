@@ -2,9 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  NOIR_E1_PROFILE_COUNT,
+  NOIR_E1_PROFILE_STORAGE_KEY,
   M2NEX_PROFILE_STORAGE_KEY,
+  NOIR_S1_PROFILE_COUNT,
+  NOIR_S1_PROFILE_STORAGE_KEY,
   defaultM2NexProfiles,
   loadM2NexProfiles,
+  parseM2NexProfileImport,
   saveM2NexProfiles,
   type M2NexProfileSeed,
 } from "./m2nex-profiles.ts";
@@ -69,4 +74,47 @@ test("invalid stored profiles fall back to current mouse settings", () => {
   const loaded = loadM2NexProfiles(store, seed());
   assert.deepEqual(loaded.map((profile) => profile.name), ["Profile 1", "Profile 2", "Profile 3"]);
   assert.deepEqual(loaded[0]?.dpiStages, [800, 1600, 3200]);
+});
+
+test("S1 keeps six local slots and accepts the vendor profile envelope", () => {
+  const profiles = defaultM2NexProfiles(seed(), NOIR_S1_PROFILE_COUNT);
+  const imported = parseM2NexProfileImport({ deviceModel: "NOIR S1", profileData: profiles }, NOIR_S1_PROFILE_COUNT);
+  assert.equal(profiles.length, 6);
+  assert.equal(imported?.length, NOIR_S1_PROFILE_COUNT);
+  assert.equal(imported?.[5]?.name, "Profile 6");
+});
+
+test("S1 profiles use a separate six-slot browser-storage entry", () => {
+  const store = storage();
+  const profiles = defaultM2NexProfiles(seed(), NOIR_S1_PROFILE_COUNT);
+  profiles[5]!.name = "Productivity";
+
+  saveM2NexProfiles(store, profiles, { storageKey: NOIR_S1_PROFILE_STORAGE_KEY });
+  const loaded = loadM2NexProfiles(store, seed(), {
+    count: NOIR_S1_PROFILE_COUNT,
+    storageKey: NOIR_S1_PROFILE_STORAGE_KEY,
+  });
+
+  assert.equal(loaded.length, 6);
+  assert.equal(loaded[5]?.name, "Productivity");
+  assert.equal(store.getItem(M2NEX_PROFILE_STORAGE_KEY), null);
+});
+test("E1 has six isolated local profile slots without changing M2-NEX storage", () => {
+  const store = storage();
+  const profiles = defaultM2NexProfiles(seed(), NOIR_E1_PROFILE_COUNT);
+  profiles[0]!.name = "E1 gaming";
+  saveM2NexProfiles(store, profiles, {
+    count: NOIR_E1_PROFILE_COUNT,
+    storageKey: NOIR_E1_PROFILE_STORAGE_KEY,
+  });
+
+  const loaded = loadM2NexProfiles(store, seed(), {
+    count: NOIR_E1_PROFILE_COUNT,
+    storageKey: NOIR_E1_PROFILE_STORAGE_KEY,
+  });
+  const m2nex = loadM2NexProfiles(store, seed());
+  assert.equal(loaded.length, 6);
+  assert.equal(loaded[0]?.name, "E1 gaming");
+  assert.equal(m2nex.length, 3);
+  assert.notEqual(NOIR_E1_PROFILE_STORAGE_KEY, M2NEX_PROFILE_STORAGE_KEY);
 });

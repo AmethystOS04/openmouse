@@ -1,11 +1,11 @@
+import { displayText } from "../i18n";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import * as control from "../device/controller";
-import { ensureLocale } from "../i18n";
+import { ensureDisplayLocale } from "../i18n";
 import { interfaceThemeSlug } from "../interface-preferences";
 import { AppSidebar, type DesktopPage } from "./AppSidebar";
 import { OverviewPage } from "./OverviewPage";
 import { CaptureDialog } from "./CaptureDialog";
-import { FeedbackDialog } from "./FeedbackDialog";
 import { GamesPage, useBridgeActive } from "./GamesPage";
 import { HardwareTestPage } from "./HardwareTestPage";
 import { InterfaceSettings } from "./InterfaceSettings";
@@ -19,6 +19,7 @@ import { useBridgeBatteryReporter } from "./useBridgeBatteryReporter";
 import { useBridgeProfileApplier } from "./useBridgeProfileApplier";
 import { useControl } from "./useControl";
 import { setSoundsEnabled } from "../sound-manager";
+import { UiLocaleContext } from "./ui-locale";
 
 export function App(): ReactNode {
   const snapshot = useControl();
@@ -27,7 +28,6 @@ export function App(): ReactNode {
   const panel = useRef<HTMLDivElement>(null);
   const [captureOpen, setCaptureOpen] = useState(false);
   const [shareProfileOpen, setShareProfileOpen] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [whatsNewOpen, setWhatsNewOpen] = useState(false);
   const [page, setPage] = useState<DesktopPage>("home");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -45,7 +45,7 @@ export function App(): ReactNode {
       ? "hardware-test"
         : showingGames
           ? "games"
-          : status !== null && snapshot.deviceView === "device"
+          : (status !== null || snapshot.keyboard !== null) && snapshot.deviceView === "device"
           ? "dashboard"
           : "home";
 
@@ -62,6 +62,7 @@ export function App(): ReactNode {
         ru: "ru",
         vi: "vi",
         ar: "ar",
+        tr: "tr",
         en: "en",
       };
       const nextLang = htmlLang[locale] ?? "en";
@@ -78,7 +79,10 @@ export function App(): ReactNode {
     }
     // A stored non-English locale resolves its table after first paint;
     // re-render once it arrives instead of sticking on fallback strings.
-    if (locale !== "en") void ensureLocale(locale).then(() => control.refreshInterface());
+    void ensureDisplayLocale(locale).then(() => {
+      control.refreshInterface();
+      window.dispatchEvent(new Event("openmouse-localechange"));
+    });
   }, [locale]);
 
 
@@ -117,11 +121,12 @@ export function App(): ReactNode {
   }
 
   return (
+    <UiLocaleContext.Provider value={locale}>
     <div
       className={[
         "control-shell",
         "full-desktop-shell",
-        status ? "" : "is-empty",
+        status || snapshot.keyboard ? "" : "is-empty",
         sidebarCollapsed ? "sidebar-collapsed" : "",
         preferences.reducedMotion ? "reduce-interface-motion" : "",
         snapshot.pending.count > 0 ? "has-pending-changes" : "",
@@ -129,7 +134,7 @@ export function App(): ReactNode {
       data-interface-theme={interfaceThemeSlug(preferences.theme)}
     >
       <NewsBanner locale={locale} />
-      <AppSidebar snapshot={snapshot} page={resolvedPage} collapsed={sidebarCollapsed} onToggleCollapsed={() => setSidebarCollapsed(!sidebarCollapsed)} onNavigate={navigate} onOpenFeedback={() => setFeedbackOpen(true)} onOpenWhatsNew={() => setWhatsNewOpen(true)} />
+      <AppSidebar snapshot={snapshot} page={resolvedPage} collapsed={sidebarCollapsed} onToggleCollapsed={() => setSidebarCollapsed(!sidebarCollapsed)} onNavigate={navigate} onOpenWhatsNew={() => setWhatsNewOpen(true)} />
 
       <main className="full-desktop-main">
         <div className="full-desktop-content" ref={panel}>
@@ -147,18 +152,18 @@ export function App(): ReactNode {
             />
           )}
           <p className="app-live-region" role="status" aria-live="polite">
-            {snapshot.readStatus}
+            {displayText(locale, snapshot.readStatus)}
           </p>
         </div>
         <PendingBar snapshot={snapshot} />
       </main>
 
       <CaptureDialog open={captureOpen} onClose={() => setCaptureOpen(false)} locale={locale} />
-      <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} locale={locale} canAttachDiagnostics={status !== null} />
       <WhatsNewDialog open={whatsNewOpen} onClose={() => setWhatsNewOpen(false)} locale={locale} />
       <ShareProfileDialog open={shareProfileOpen} onClose={() => setShareProfileOpen(false)} snapshot={snapshot} />
       <AiOverlay locale={locale} />
       <ToastHost toasts={snapshot.toasts} locale={locale} />
     </div>
+    </UiLocaleContext.Provider>
   );
 }

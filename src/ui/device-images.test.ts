@@ -96,10 +96,20 @@ test("Dareu A950 PRO Mg resolves by name", () => {
   assert.equal(deviceImage(null, "Dareu A950 PRO Mg"), CDN + "dareu-a950-pro-mg.png");
 });
 
+test("Cooler Master MM711 resolves by name", () => {
+  assert.equal(deviceImage(null, "Cooler Master MM711"), CDN + "coolermaster-mm711.png");
+  assert.equal(deviceImage(null, "MM711"), CDN + "coolermaster-mm711.png");
+});
+
 test("Delux M800 Mini and M800 family resolve by name", () => {
   assert.equal(deviceImage(null, "Delux M800 Mini"), "/devices/delux-m800-mini.png");
   assert.equal(deviceImage(null, "Delux M800 Mini (Wireless)"), "/devices/delux-m800-mini.png");
   assert.equal(deviceImage(null, "Delux M800 Pro"), "/devices/delux-m800-mini.png");
+});
+
+test("ROG Harpe Ace Aim Lab Edition resolves by name on every connection", () => {
+  assert.equal(deviceImage(null, "ROG Harpe Ace Aim Lab Edition"), "/devices/asus-rog-harpe-ace-aim-lab.png");
+  assert.equal(deviceImage(null, "ROG Omni receiver"), CDN + "unknown-device.png");
 });
 
 test("Attack Shark R2 resolves by name (PID 0x402D is shared with the M5 Pro)", () => {
@@ -226,6 +236,14 @@ test("Finalmouse Starlight-12 / ULX resolves by name", () => {
   assert.equal(deviceImage(null, "Finalmouse ULX"), CDN + "finalmouse-ulx.png");
 });
 
+test("Finalmouse Starlight X resolves to its own render, not the ULX's", () => {
+  assert.equal(deviceImage(null, "Finalmouse Starlight X"), CDN + "finalmouse-slx.png");
+  assert.equal(deviceImage(null, "SLX"), CDN + "finalmouse-slx.png");
+  assert.equal(isUnknownDevice(null, "Finalmouse Starlight X"), false);
+  // The Ultralight X shell keeps its own render.
+  assert.equal(deviceImage(null, "Finalmouse UltralightX"), CDN + "finalmouse-ulx.png");
+});
+
 test("test-needed and unsupported models are not given new artwork", () => {
   assert.equal(deviceImage(null, "Razer Basilisk V3"), CDN + "unknown-device.png");
   assert.equal(deviceImage(null, "Endgame Gear OP1w 4K v2"), CDN + "unknown-device.png");
@@ -248,6 +266,20 @@ test("K-snake X11 resolves by name regardless of transport", () => {
 test("Noir Gear M2-NEX resolves to its maintainer-hosted artwork", () => {
   assert.equal(deviceImage(null, "M2-NEX"), CDN + "noir-m2-nex.png");
   assert.equal(deviceImage(null, "Noir Gear M2-NEX"), CDN + "noir-m2-nex.png");
+  assert.equal(deviceImage(null, "NOIR E1"), CDN + "noir-e1.png");
+});
+
+test("Noir Gear M1-NEX resolves to its reserved maintainer-hosted artwork", () => {
+  assert.equal(deviceImage(null, "M1-NEX"), CDN + "noir-m1-nex.png");
+  assert.equal(deviceImage(null, "Noir Gear M1-NEX"), CDN + "noir-m1-nex.png");
+  // Neighboring Noir Gear models must not match the M1-NEX render.
+  assert.equal(deviceImage(null, "Noir M1"), CDN + "unknown-device.png");
+  assert.equal(deviceImage(null, "Noir M1 Lite"), CDN + "unknown-device.png");
+});
+
+test("Noir S1 resolves to the reserved maintainer-hosted artwork filename", () => {
+  assert.equal(deviceImage(null, "NOIR S1"), CDN + "noir-s1.png");
+  assert.equal(deviceImage(null, "Noir Gear / NOIR S1"), CDN + "noir-s1.png");
 });
 
 test("Attack Shark X11 does not inherit K-snake artwork", () => {

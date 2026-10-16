@@ -1,5 +1,7 @@
 import { selectableValues } from "../../device/options.ts";
 import { isPulsarProProtocol } from "../../device/traits.ts";
+import { isSlxStatus, slxProfiles, slxTmr } from "../../device/finalmouse-slx.ts";
+import { isNoirKsnakeStatus } from "../../device/noir.ts";
 import type { ControlSnapshot } from "../../device/types";
 
 export interface CardAvailability {
@@ -8,6 +10,7 @@ export interface CardAvailability {
   sensor: boolean;
   lightforce: boolean;
   superstrike: boolean;
+  magnetic: boolean;
   lighting: boolean;
   lightingAdvanced: boolean;
   signal: boolean;
@@ -20,7 +23,12 @@ export interface CardAvailability {
   ninjutsoClick: boolean;
   teevolutionDpiLighting: boolean;
   finalmouse: boolean;
+  tmrDs: boolean;
+  perfectPolling: boolean;
+  finalmouseProfiles: boolean;
   incott: boolean;
+  lunafuryButtons: boolean;
+  lunafuryWheelGuard: boolean;
   dongleLed: boolean;
   eggFilter: boolean;
   eggSpdt: boolean;
@@ -40,6 +48,9 @@ export interface CardAvailability {
   onboardProfiles: boolean;
   buttonMapping: boolean;
   ksnakeMacros: boolean;
+  wallhackScanning: boolean;
+  wallhackCurves: boolean;
+  wallhackMacros: boolean;
   powerMode: boolean;
   profiles: boolean;
   keychronNapeLayers: boolean;
@@ -53,6 +64,7 @@ const NOTHING: CardAvailability = {
   sensor: false,
   lightforce: false,
   superstrike: false,
+  magnetic: false,
   lighting: false,
   lightingAdvanced: false,
   signal: false,
@@ -65,7 +77,12 @@ const NOTHING: CardAvailability = {
   ninjutsoClick: false,
   teevolutionDpiLighting: false,
   finalmouse: false,
+  tmrDs: false,
+  perfectPolling: false,
+  finalmouseProfiles: false,
   incott: false,
+  lunafuryButtons: false,
+  lunafuryWheelGuard: false,
   dongleLed: false,
   eggFilter: false,
   eggSpdt: false,
@@ -85,6 +102,9 @@ const NOTHING: CardAvailability = {
   onboardProfiles: false,
   buttonMapping: false,
   ksnakeMacros: false,
+  wallhackScanning: false,
+  wallhackCurves: false,
+  wallhackMacros: false,
   powerMode: false,
   profiles: false,
   keychronNapeLayers: false,
@@ -92,14 +112,14 @@ const NOTHING: CardAvailability = {
   advancedHost: false,
 };
 
-export function cardAvailability(snapshot: ControlSnapshot): CardAvailability {
+function computeCardAvailability(snapshot: ControlSnapshot): CardAvailability {
   const status = snapshot.status;
   if (!status) return NOTHING;
   const ui = status.ui;
   const { traits, capabilities } = snapshot;
   const ready = !snapshot.settingsPending;
   const host = traits.advancedSection;
-  const isM2Nex = status.brand === "Noir Gear" && status.name === "M2-NEX";
+  const isNoirKsnake = isNoirKsnakeStatus(status);
 
   const sensor = !(!status.gamingSurfaceMode
     && Array.isArray(status.supportedLiftOffDistances)
@@ -132,23 +152,32 @@ export function cardAvailability(snapshot: ControlSnapshot): CardAvailability {
     // The Attack Shark X11's settings channel is native-only (settingsReady
     // stays false), but its polling rate is still controllable through
     // OpenMouse Bridge — see isNativeAttackSharkX11 in device/controller.ts.
-    polling: ready || (
+    //
+    // The Finalmouse Starlight X reports a polling rate but has no adjustable
+    // one: PerfectPolling runs a fixed pipeline (see PerfectPollingCard), so
+    // there is nothing to pick. Ultralight X keeps the selector.
+    polling: !isSlxStatus(status) && (ready || (
       status.brand === "Attack Shark"
       && status.name === "Attack Shark X11"
       && status.ui?.settingsReady === false
-    ),
+    )),
     sensor: sensor && ready,
     lightforce: Boolean(status.lightforceSwitchMode),
     superstrike: traits.logitech && status.analogButtonTuning?.buttons.length === 2,
+    magnetic: status.magneticButtons?.buttons.length === 2,
     lighting: Boolean(status.lighting || status.lightingZones?.length),
-    lightingAdvanced: host && !isM2Nex && Boolean(status.lighting || status.lightingZones?.length),
+    lightingAdvanced: host && !isNoirKsnake && Boolean(status.lighting || status.lightingZones?.length),
     onboardProfiles: (status.profileCount ?? 0) > 1 && status.activeProfile != null,
     buttonMapping: Boolean(status.buttonMappings) && Boolean(status.buttonOptions?.length),
     // K-snake/M2-NEX exposes the macro write/commit path. The editor starts
     // with local slots because this firmware does not expose a reliable macro
     // read through the browser.
-    ksnakeMacros: ui?.family === "ksnake"
-      || (status.brand === "Noir Gear" && status.name === "M2-NEX"),
+    ksnakeMacros: ui?.family === "ksnake" || isNoirKsnake,
+    // WALLHACK M-001 extras. Curves and macros need mouse firmware 57+; the
+    // cards surface the device error when an older board refuses the read.
+    wallhackScanning: ui?.family === "wallhack-mouse" && status.sensorScanningMode != null,
+    wallhackCurves: ui?.family === "wallhack-mouse" && status.dynamicSensitivityEnabled != null,
+    wallhackMacros: ui?.family === "wallhack-mouse",
     powerMode: host && Boolean(status.powerModes?.length),
     profiles: traits.logitech
       && status.deviceMode !== undefined && status.deviceMode !== "Unknown",
@@ -158,10 +187,11 @@ export function cardAvailability(snapshot: ControlSnapshot): CardAvailability {
 
     signal: host && traits.signal,
     debounce: host && traits.debounce
+      && status.lunafury?.leftDebounceMs == null && status.lunafury?.rightDebounceMs == null
       && status.debounceMs !== null && status.debounceMs !== undefined,
     sleep: host && (traits.sleep || capabilities?.sleepOptions != null || razerSleep)
       && ui?.hideSleepCard !== true,
-    ksnakeScroll: ui?.family === "ksnake" && status.scrollDirection != null,
+    ksnakeScroll: (ui?.family === "ksnake" || isNoirKsnake) && status.scrollDirection != null,
     lowPower: host && razerLowPower,
     processing: host && processing,
     ninjutsoSensor: host && traits.ninjutso
@@ -171,11 +201,22 @@ export function cardAvailability(snapshot: ControlSnapshot): CardAvailability {
     teevolutionDpiLighting: host && (ui?.dpiLighting != null
       || (traits.teevolution && capabilities?.teevolutionProfile != null)),
     finalmouse: host && traits.finalmouse,
+    // Starlight X-only pages from xpanel: TMR-DS needs a reported click
+    // mode, PerfectPolling is a fixed capability readout, and profiles need
+    // a reported roster. All stay hidden on Ultralight X.
+    tmrDs: host && traits.finalmouse && isSlxStatus(status) && slxTmr(status) !== null,
+    perfectPolling: host && traits.finalmouse && isSlxStatus(status),
+    finalmouseProfiles: host && traits.finalmouse && slxProfiles(status) !== null,
     // Gated on the fields themselves rather than a brand trait: the receiver
     // LED is absent over the cable, so the card follows what the device
     // actually reported.
     incott: host
       && (status.incottFireKeyTimes != null || status.incottReceiverLedMode != null),
+    lunafuryButtons: host && status.brand === "LunaFury" && (
+      status.lunafury?.lightningMode != null || status.lunafury?.leftDebounceMs != null
+      || status.lunafury?.rightDebounceMs != null || status.lunafury?.middleDebounceMs != null
+    ),
+    lunafuryWheelGuard: host && status.brand === "LunaFury" && status.lunafury?.wheelGuard != null,
     // Drivers report a boolean only for receivers that answer the LED command.
     dongleLed: typeof status.dongleLedEnabled === "boolean",
     eggFilter: eggs,
@@ -209,4 +250,19 @@ export function cardAvailability(snapshot: ControlSnapshot): CardAvailability {
     mxMasterButtons: traits.logitech && (snapshot.buttons?.length ?? 0) > 0,
     pulsarPro: host && isPulsarProProtocol(status),
   };
+}
+
+let lastAvailability: { snapshot: ControlSnapshot; value: CardAvailability } | null = null;
+
+/**
+ * Availability of every card for this snapshot. Several components in one
+ * render pass (OverviewPage, OverviewContent, Workspace) ask for the same
+ * snapshot, so the result is memoized by identity — the snapshot object is
+ * replaced wholesale on every emit, so a stale entry can never be reused.
+ */
+export function cardAvailability(snapshot: ControlSnapshot): CardAvailability {
+  if (lastAvailability?.snapshot === snapshot) return lastAvailability.value;
+  const value = computeCardAvailability(snapshot);
+  lastAvailability = { snapshot, value };
+  return value;
 }

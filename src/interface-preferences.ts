@@ -13,7 +13,7 @@ export type InterfaceTheme =
   | "Light";
 export type InterfaceColorMode = "Light" | "Dark" | "System";
 export type InterfaceLocale =
-   "en" | "pt" | "es" | "fr" | "de" | "zh" | "ja" | "ko" | "ru" | "vi" | "ar";
+   "en" | "pt" | "es" | "fr" | "de" | "zh" | "ja" | "ko" | "ru" | "vi" | "ar" | "tr";
 
 /** Every supported locale, in picker order. Each entry's `match` decides
     which `navigator.language` prefixes resolve to it on first run — checked
@@ -30,6 +30,7 @@ export const LOCALES: ReadonlyArray<{ code: InterfaceLocale; match: readonly str
   { code: "vi", match: ["vi"] },
   { code: "en", match: ["en"] },
   { code: "ar", match: ["ar"] },
+  { code: "tr", match: ["tr"] },
 ];
 
 export interface InterfacePreferences {
@@ -115,7 +116,7 @@ export function loadInterfacePreferences(storage: Storage): InterfacePreferences
   try {
     const saved = JSON.parse(storage.getItem(STORAGE_KEY) ?? "{}") as Partial<InterfacePreferences>;
     return {
-      theme: THEMES.includes(saved.theme as InterfaceTheme) ? saved.theme as InterfaceTheme : "Mono",
+      theme: THEMES.includes(saved.theme as InterfaceTheme) ? saved.theme as InterfaceTheme : DEFAULT_INTERFACE_PREFERENCES.theme,
       colorMode: saved.colorMode === "Light" || saved.colorMode === "Dark" ? saved.colorMode : "System",
       locale: coerceLocale(saved.locale),
       reducedMotion:

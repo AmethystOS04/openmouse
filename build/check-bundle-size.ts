@@ -14,7 +14,14 @@ const BUDGET_BYTES: Record<string, number> = {
   // avatars), the animated day/night scene (sun/moon/star/cloud/bonfire
   // keyframes) and the credits-style quote widget push the measured CSS
   // aggregate to 183.7 kB.
-  ".css": 195_000,
+  // Raised to 210 kB after the protocol 0.26.0 device batch left the measured
+  // CSS aggregate at 194.2 kB — 843 bytes under the old 195 kB — so the next
+  // card or theme change would have tripped the check for no reviewable reason.
+  // Raised to 225 kB for the Logitech Superstrike Buttons tab: the button map
+  // card (callouts, command list, scrollbar), the HITS presets/test/share dialogs
+  // and the Bunny Hop card add ~15 kB of scoped styles; the measured CSS is
+  // 210.6 kB, which was 631 bytes over the old 210 kB budget.
+  ".css": 225_000,
   // Raised from 510 kB for Bridge discovery, profile editing, automatic
   // reconnection, and recent device support, which have since grown further
   // with the supported-device page and MX Master remap controls. Preview
@@ -173,7 +180,50 @@ const BUDGET_BYTES: Record<string, number> = {
   // store) are pulled in through SUPPORTED_HID_FILTERS and the controllers,
   // and the shared UI gained the macro-card and profile-overview CSS. Measured
   // aggregate is 1,995.2 kB, leaving ~90 kB of headroom.
-  ".js": 2_085_000,
+  // Raised to 2,150 kB for the protocol 0.26.0 device batch: AJAZZ AJ179 PRO
+  // (#169), Redragon M690 PRO (#163, wired into the panel by #617), Lamzu Paro
+  // Aurora (#172), plus the X11-on-Bridge (#174), PRO X Wireless format 4
+  // (#175) and Logitech onboard-profile (#166/#589) work. Their protocol codecs
+  // arrive through bridge-hid's SUPPORTED_HID_FILTERS as well as the
+  // controllers. The measured aggregate is 2,084.2 kB, which left only 801
+  // bytes of headroom under the old 2,085 kB.
+  // Raised to 2.2 MB for the Superstrike Buttons tab (button map, HITS presets,
+  // speed test, setup codes, bounce check) merged with protocol 0.28.0: the
+  // measured aggregate is 2,150.4 kB, 350 bytes over the old 2.15 MB budget.
+  // Raised to 2,350 kB for protocol 0.31.0 and the work that landed on 0.29-0.31:
+  // the Starlight X (Finalmouse) panel, the Wallhack M-001 scanning, DPI curve
+  // and macro cards, and the ATK per-model capability cards. The measured
+  // aggregate is 2,288.4 kB, 88 kB over the old 2.2 MB budget, leaving ~60 kB
+  // of headroom.
+  // Raised to 2,450 kB for keyboard protocol 1.0.0 and its control panel:
+  // Wuque codecs/client wiring, shared workspace cards, per-key trigger UI,
+  // and keyboard strings in all ten locale chunks. The measured aggregate
+  // is 2,419.9 kB, leaving ~30 kB of headroom.
+  // Raised to 2,470 kB for the @openmouse/protocol 0.38.0 bump: the AJAZZ
+  // NJ07/NJ08 key-map codec, the 49-entry vendor button-action catalog, and
+  // the marker/default client handling arrive through bridge-hid's
+  // SUPPORTED_HID_FILTERS. The measured aggregate is 2,454.4 kB, 4.4 kB over
+  // the old 2,450 kB budget, leaving ~15 kB of headroom.
+  // Raised to 2,472 kB for the @openmouse/protocol 0.40.0 bump: the G-Wolves
+  // XVI-new driver (profile-addressed sensor commands plus clicks-only
+  // remap), 16 more cataloged G-Wolves PIDs and their picker filters, and
+  // the Bridge empty-enumeration diagnostic. The measured aggregate is
+  // 2,470.9 kB, 0.9 kB over the old 2,470 kB budget, leaving ~1 kB of
+  // headroom — the next driver will need a real diet or a bigger bump.
+  // Raised to 2,474 kB for the @openmouse/protocol 0.40.1 bump: XVI-new
+  // button-slot fix plus the real DPI stage table and per-stage/active
+  // setters. The measured aggregate is 2,472.0 kB, under a kilobyte over
+  // the old 2,472 kB budget.
+  // Raised to 2,478 kB for the @openmouse/protocol 0.42.1 bump: LunaFury
+  // onboard, remapping, and power controls, Wallhack debounce, Attack Shark
+  // X11 SE battery, Superlight 2 Lightspeed polling above 1000 Hz, and the
+  // DeathAdder V3 polling commit. The measured aggregate is 2,476.0 kB,
+  // 2.0 kB over the old 2,474 kB budget, leaving ~2.0 kB of headroom.
+  // Raised to 2,630 kB for Turkish, including legacy driver labels, dynamic
+  // messages and dialog copy. The two Turkish dictionaries remain lazy
+  // chunks. The measured aggregate is about 2,620 kB, including render-boundary
+  // localization; no additional CSS framework or runtime dependency is added.
+  ".js": 2_630_000,
 };
 
 const ASSETS = join("dist", "assets");

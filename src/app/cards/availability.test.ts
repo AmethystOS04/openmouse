@@ -39,6 +39,41 @@ const CONTROL = {
   mappedTo: 0x00c3, diverted: false, remappableTo: [0x0052], remapFlags: 0,
 } as unknown as NonNullable<ControlSnapshot["buttons"]>[number];
 
+test("LunaFury exposes only successfully read controls and replaces global debounce", () => {
+  const has = cardAvailability(snapshot({ status: {
+    brand: "LunaFury", ui: { family: "lunafury" }, debounceMs: 4, angleTuning: -12,
+    lunafury: { lightningMode: 0, leftDebounceMs: 0, middleDebounceMs: 1,
+      wheelGuard: { enabled: false, windowMs: 0 } },
+  } }));
+  assert.equal(has.lunafuryButtons, true);
+  assert.equal(has.lunafuryWheelGuard, true);
+  assert.equal(has.processing, true);
+  assert.equal(has.debounce, false);
+});
+
+test("unknown LunaFury controls are hidden without losing basic debounce", () => {
+  const has = cardAvailability(snapshot({ status: {
+    brand: "LunaFury", ui: { family: "lunafury" }, debounceMs: 4, lunafury: {},
+  } }));
+  assert.equal(has.lunafuryButtons, false);
+  assert.equal(has.lunafuryWheelGuard, false);
+  assert.equal(has.debounce, true);
+  const middleOnly = cardAvailability(snapshot({ status: {
+    brand: "LunaFury", ui: { family: "lunafury" }, debounceMs: 4, lunafury: { middleDebounceMs: 1 },
+  } }));
+  assert.equal(middleOnly.lunafuryButtons, true);
+  assert.equal(middleOnly.debounce, true);
+});
+
+test("LunaFury-specific cards are not offered to another CompX brand", () => {
+  const has = cardAvailability(snapshot({ status: {
+    brand: "Attack Shark", ui: { family: "attack-shark" },
+    lunafury: { lightningMode: 1, wheelGuard: { enabled: true, windowMs: 100 } },
+  } }));
+  assert.equal(has.lunafuryButtons, false);
+  assert.equal(has.lunafuryWheelGuard, false);
+});
+
 test("the button card appears only when the mouse reports controls", () => {
   // The driver answers with an empty list on a mouse without 0x1B04, so this
   // must key on the controls themselves rather than on the brand.
@@ -64,6 +99,27 @@ test("a driver still reading hides the settings grid but not the rest", () => {
   assert.equal(has.polling, false);
   assert.equal(has.sensor, false);
   assert.equal(has.logitechDetails, true);
+});
+
+test("the Finalmouse Starlight X has no polling card; the Ultralight X keeps it", () => {
+  // SLX runs PerfectPolling (a fixed pipeline) and reports a rate it will not
+  // let the user change, so the selector is dropped and PerfectPollingCard
+  // stands in. Only `finalmouseIsSlx` distinguishes the two dongles.
+  const slx = cardAvailability(snapshot({ status: {
+    brand: "Finalmouse",
+    name: "Finalmouse Starlight X",
+    ui: { family: "finalmouse-slx" },
+    finalmouseIsSlx: true,
+  } as Partial<MouseStatus> }));
+  assert.equal(slx.polling, false);
+
+  const ulx = cardAvailability(snapshot({ status: {
+    brand: "Finalmouse",
+    name: "Finalmouse UltralightX",
+    ui: { family: "finalmouse-ulx" },
+    finalmouseIsSlx: false,
+  } as Partial<MouseStatus> }));
+  assert.equal(ulx.polling, true);
 });
 
 test("the sensor card goes when the mouse reports neither surface nor lift-off", () => {
@@ -250,6 +306,20 @@ test("Keychron Nape Pro gets Auto sleep without debounce or signal", () => {
   assert.equal(has.signal, false);
 });
 
+test("Keychron Launcher 8k mice get sleep and debounce, 1k mice only debounce", () => {
+  const family = (f: string) => cardAvailability(snapshot({
+    status: { brand: "Keychron", ui: { family: f }, debounceMs: 4 },
+  }));
+  const k8 = family("keychron-8k");
+  assert.equal(k8.advancedHost, true);
+  assert.equal(k8.sleep, true);
+  assert.equal(k8.debounce, true);
+  const k1 = family("keychron-1k");
+  assert.equal(k1.advancedHost, true);
+  assert.equal(k1.sleep, false);
+  assert.equal(k1.debounce, true);
+});
+
 test("a driver may opt into the advanced section and still suppress its cards", () => {
   const has = cardAvailability(snapshot({
     status: {
@@ -308,6 +378,17 @@ test("HITS tuning needs exactly the two primary buttons", () => {
     status: { analogButtonTuning: { ...tuning, buttons: [{}] } as never },
   })).superstrike, false);
   assert.equal(cardAvailability(snapshot({})).superstrike, false);
+});
+
+test("the magnetic card follows the mouse's own report, whatever the brand", () => {
+  const range = { triggerPointRange: { min: 1, max: 10 }, rapidTriggerRange: null, rapidTriggerUnit: "ms" as const, rapidTriggerSwitch: false, canChooseSwitchType: false, calibration: null, liveDepth: false };
+  assert.equal(cardAvailability(snapshot({
+    status: { brand: "G-Wolves", magneticButtons: { ...range, buttons: [{}, {}] as never } },
+  })).magnetic, true);
+  assert.equal(cardAvailability(snapshot({
+    status: { brand: "G-Wolves", magneticButtons: { ...range, buttons: [{}] as never } },
+  })).magnetic, false);
+  assert.equal(cardAvailability(snapshot({ status: { brand: "G-Wolves" } })).magnetic, false);
 });
 
 test("debounce is offered only by the families that store it", () => {
@@ -434,6 +515,38 @@ test("M2-NEX exposes the macro capability even when its UI family is absent", ()
   assert.equal(has.ksnakeMacros, true);
 });
 
+test("WALLHACK M-001 exposes scanning, curves and macros from its status", () => {
+  const has = cardAvailability(snapshot({
+    status: {
+      brand: "WALLHACK",
+      name: "WALLHACK M-001",
+      ui: { family: "wallhack-mouse", showAdvancedSection: true },
+      sensorScanningMode: "HIGH",
+      dynamicSensitivityEnabled: false,
+      dynamicSensitivityMode: "classic",
+      buttonMappings: { Left: "Left Click" },
+      buttonOptions: ["Left Click", "Disabled"],
+    },
+  }));
+  assert.equal(has.wallhackScanning, true);
+  assert.equal(has.wallhackCurves, true);
+  assert.equal(has.wallhackMacros, true);
+  assert.equal(has.buttonMapping, true);
+});
+
+test("WALLHACK scanning and curves hide when the mouse did not answer", () => {
+  const has = cardAvailability(snapshot({
+    status: {
+      brand: "WALLHACK",
+      name: "WALLHACK M-001",
+      ui: { family: "wallhack-mouse", showAdvancedSection: true },
+    },
+  }));
+  assert.equal(has.wallhackScanning, false);
+  assert.equal(has.wallhackCurves, false);
+  assert.equal(has.wallhackMacros, true);
+});
+
 test("M2-NEX keeps lighting out of Advanced", () => {
   const has = cardAvailability(snapshot({
     status: {
@@ -445,6 +558,43 @@ test("M2-NEX keeps lighting out of Advanced", () => {
   }));
   assert.equal(has.lighting, true);
   assert.equal(has.lightingAdvanced, false);
+});
+
+test("NOIR S1 exposes its standard controls and hides unsupported extras", () => {
+  const has = cardAvailability(snapshot({
+    status: {
+      // The published 0.22 K-snake client identifies this model by name but
+      // still reports its protocol family as the brand.
+      brand: "K-snake",
+      name: "NOIR S1",
+      ui: {
+        family: "ksnake",
+        showAdvancedSection: true,
+        hideSleepCard: true,
+      },
+      buttonMappings: {
+        Left: "Left click",
+        Right: "Right click",
+        Middle: "Middle click",
+        Forward: "Forward",
+        Backward: "Backward",
+        DPI: "DPI loop",
+      },
+      buttonOptions: ["Left click", "Right click", "Scroll up", "DPI loop"],
+      dpiStages: [800, 1200, 1600, 3200, 5000, 12000],
+      scrollDirection: "Reverse",
+      lighting: {} as never,
+    },
+  }));
+  assert.equal(has.dpi, true);
+  assert.equal(has.polling, true);
+  assert.equal(has.buttonMapping, true);
+  assert.equal(has.ksnakeScroll, true);
+  assert.equal(has.ksnakeMacros, true);
+  assert.equal(has.lighting, true);
+  assert.equal(has.lightingAdvanced, false);
+  assert.equal(has.sleep, false);
+  assert.equal(has.sensor, true, "surface capability is independent of lift-off control visibility");
 });
 
 test("the generic button card follows the driver\'s mappings, not the advanced section", () => {
@@ -461,6 +611,34 @@ test("the generic button card follows the driver\'s mappings, not the advanced s
   assert.equal(has.processing, false, "the rest of the advanced section stays closed");
 });
 
+test("NOIR E1 gets the same core configurator controls even without a family hint", () => {
+  const has = cardAvailability(snapshot({
+    status: {
+      brand: "K-snake",
+      name: "NOIR E1",
+      ui: { showAdvancedSection: true },
+      buttonMappings: {
+        Left: "Left click",
+        Right: "Right click",
+        Middle: "Middle click",
+        Forward: "Forward",
+        Backward: "Backward",
+        DPI: "DPI loop",
+      },
+      buttonOptions: ["Left click", "Right click", "Scroll up", "DPI loop"],
+      dpiStages: [800, 1200, 1600, 3200, 5000, 12000],
+      scrollDirection: "Forward",
+      lighting: {} as never,
+    },
+  }));
+  assert.equal(has.dpi, true);
+  assert.equal(has.polling, true);
+  assert.equal(has.buttonMapping, true);
+  assert.equal(has.ksnakeScroll, true);
+  assert.equal(has.ksnakeMacros, true);
+  assert.equal(has.lightingAdvanced, false);
+});
+
 test("the G-Wolves XVI generation opens sleep, debounce and processing, but not signal", () => {
   const cards = cardAvailability(snapshot({
     status: {
@@ -473,6 +651,25 @@ test("the G-Wolves XVI generation opens sleep, debounce and processing, but not 
       sleepTimeout: 60,
     },
   }));
+  assert.equal(cards.sleep, true);
+  assert.equal(cards.debounce, true);
+  assert.equal(cards.processing, true);
+  assert.equal(cards.signal, false);
+});
+
+test("LunaFury exposes CompX advanced controls without a signal card", () => {
+  const cards = cardAvailability(snapshot({
+    status: {
+      brand: "LunaFury",
+      ui: { family: "lunafury" },
+      motionSync: true,
+      angleSnapping: false,
+      rippleControl: false,
+      debounceMs: 4,
+      sleepTimeout: 300,
+    },
+  }));
+  assert.equal(cards.advancedHost, true);
   assert.equal(cards.sleep, true);
   assert.equal(cards.debounce, true);
   assert.equal(cards.processing, true);
@@ -509,4 +706,29 @@ test("the Incott card follows the fields the device reported, not a brand trait"
     status: { brand: "Incott", ui: { family: "incott", showAdvancedSection: true } },
   }));
   assert.equal(silent.incott, false);
+});
+
+test("the Glorious Model O2 Pro 4K/8K opens debounce, Motion Sync and the profile card, but not sleep or signal", () => {
+  const cards = cardAvailability(snapshot({
+    status: {
+      brand: "Glorious",
+      ui: {
+        family: "glorious-core2",
+        showAdvancedSection: true,
+        hideAngleSnapping: true,
+        hideRippleControl: true,
+        hideSleepCard: true,
+        hideSignalCard: true,
+      },
+      debounceMs: 10,
+      motionSync: true,
+      activeProfile: 1,
+      profileCount: 3,
+    },
+  }));
+  assert.equal(cards.debounce, true);
+  assert.equal(cards.processing, true);
+  assert.equal(cards.onboardProfiles, true);
+  assert.equal(cards.sleep, false);
+  assert.equal(cards.signal, false);
 });

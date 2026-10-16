@@ -6,13 +6,29 @@ import type { InterfaceLocale } from "./interface-preferences";
     inside the controller stay English until phase 2. */
 
 const en = {
+  "luna.angleSnap": "Angle Snap",
+  "luna.competitiveMode": "Competitive Mode",
+  "luna.trackingMode": "Tracking Mode",
+  "luna.motionSync": "Motion Sync",
+  "luna.rippleControl": "Ripple Control",
+  "luna.buttons": "Button response",
+  "luna.lightning": "Lightning Trigger",
+  "luna.leftPriority": "Left priority",
+  "luna.rightPriority": "Right priority",
+  "luna.leftDebounce": "Left button latency",
+  "luna.rightDebounce": "Right button latency",
+  "luna.middleDebounce": "Middle button debounce",
+  "luna.wheelGuard": "Wheel anti-mistouch",
+  "luna.wheelGuardWindow": "Wheel guard window",
+  "luna.sensorAngle": "Sensor angle",
   "nav.language": "Language",
   "nav.settings": "Settings",
   "nav.support": "Support",
   "nav.supportProject": "Support the Project",
   "nav.home": "Home",
   "nav.dashboard": "Mouse Config",
-  "nav.feedback": "Feedback",
+  "nav.help": "Help & Feedback",
+  "nav.helpSubtitle": "Join the community server",
   "nav.docs": "Docs",
   "nav.supported": "Supported devices",
   "nav.whatsNew": "What's New",
@@ -63,6 +79,25 @@ const en = {
   "ov.firmware": "FIRMWARE",
   "ov.fwSingle": "Firmware reported by mouse",
   "ov.fwNone": "Not reported",
+  "fw.title": "Firmware update",
+  "fw.checking": "Checking\u2026",
+  "fw.upToDate": "Up to date",
+  "fw.available": "Update available",
+  "fw.required": "Required update",
+  "fw.unknown": "Unknown",
+  "fw.unknownDetail": "No entry for this model yet.",
+  "fw.check": "Check",
+  "fw.retry": "Retry",
+  "fw.later": "Later",
+  "fw.download": "Download",
+  "fw.failed": "Check failed.",
+  "fw.current": "Current v{version}",
+  "fw.versions": "v{current} \u2192 v{latest}",
+  "fw.comingSoon": "In-app flashing is not supported yet \u2014 use the vendor download for now.",
+  "fw.changelog": "Changelog",
+  "fw.history": "Version history",
+  "fw.dataFrom": "Update data from {date}",
+  "fw.sectionLabel": "Firmware update",
   "ov.connection": "CONNECTION",
   "ov.connReceiver": "2.4 GHz receiver",
   "ov.conn24": "2.4 GHz",
@@ -144,6 +179,7 @@ const en = {
   "set.language": "LANGUAGE",
   "set.languageTitle": "Language",
   "set.languageBody": "Choose the interface language. Device messages stay English for now.",
+  "set.turkish": "Türkçe",
   "set.english": "English",
   "set.portuguese": "Português",
   "set.spanish": "Español",
@@ -192,26 +228,15 @@ const en = {
   "bat.full": "Fully charged",
   "bat.untilFull": "until full",
   "bat.remaining": "remaining",
+  "bat.remainingRated": "remaining (rated life)",
   "bat.charging": "Charging",
   "bat.chargingSlowly": "Charging slowly",
   "bat.almostFull": "Almost full",
   "bat.fullState": "Full",
   "bat.discharging": "Discharging",
   "bat.unknown": "Unknown",
-  "fb.title": "Send feedback",
-  "fb.description": "Share a bug report, a feature request, or any other note. Feedback is sent anonymously — nothing is attached unless you opt in below.",
-  "fb.placeholder": "Write your feedback here…",
-  "fb.handleLabel": "Discord handle (optional)",
   "fb.handlePlaceholder": "username",
-  "fb.attachLabel": "Attach device details and diagnostic log",
-  "fb.attachDetail": "Adds your device info and the recent WebHID traffic so we can debug faster. Only sent when this box is checked.",
-  "fb.send": "Send feedback",
-  "fb.sent": "Feedback sent",
-  "fb.sentDetail": "Thanks — your note was delivered.",
-  "fb.error": "Couldn't send feedback",
-  "fb.errorDetail": "Check your connection and try again.",
   "fb.cooldown": "You can send feedback again in {seconds}s.",
-  "fb.limit": "You've reached the feedback limit for now. Try again later.",
   "artreq.request": "Request Artwork",
   "gamereq.title": "Request a game or app",
   "gamereq.previewTitle": "Check your request",
@@ -311,6 +336,7 @@ const en = {
   "dpi.editorFixedNote": "One row per DPI stage, {total} fixed. Edit the value or slider to change it. Click a number to make it the active stage.",
   "dpi.stagesReadOnly": "These DPI stages come from the mouse read-only, and cannot be edited here. Change them in the vendor software.",
   "dpi.editorGenericNote": "One row per preset DPI. Tick a row (or click its number) to make it the current DPI; unticked rows are kept as picks for later.",
+  "dpi.singleOverwritesNote": "Save writes this DPI to all {total} stages and overwrites their values. Your old stages are kept in this browser. Switch back to Stages to restore them.",
   "dpi.xAxis": "X axis",
   "dpi.yAxis": "Y axis",
   "dpi.viewStages": "Stages",
@@ -329,6 +355,21 @@ const en = {
   "perf.wireless": "Wireless",
   "perf.gamingSurface": "Gaming surface",
   "perf.surfaceNote": "Tunes the sensor for gaming mouse pads. Auto lets the mouse decide; turn it off if tracking misbehaves on a non-gaming surface.",
+  "perf.scanningMode": "Sensor scanning mode",
+  "perf.scanningNote": "HIGH is the default sensor frame rate. ACCEL pins the sensor to high performance and uses more battery.",
+  "perf.dynSens": "DPI acceleration",
+  "perf.dynSensNote": "Scales sensitivity with how fast the mouse moves: slow precise movements stay low while fast flicks go further. Needs mouse firmware 57 or newer.",
+  "perf.dynSensCurve": "Curve",
+  "perf.dynSensSpeed": "Speed",
+  "perf.dynSensGain": "Gain",
+  "perf.dynSensReporting": "Motion-speed reporting",
+  "perf.dynSensReportingNote": "Streams live cursor speed for curve previews.",
+  "perf.dynSensSave": "Save custom curve",
+  "perf.dynSensLoading": "Reading curve tables…",
+  "perf.classic": "Classic",
+  "perf.natural": "Natural",
+  "perf.jump": "Jump",
+  "perf.custom": "Custom",
   "perf.auto": "Auto",
   "perf.liftOff": "Lift-off distance",
   "perf.liftOffMode": "Lift-off mode",
@@ -344,7 +385,7 @@ const en = {
   "perf.bunnyHop": "Bunny hop",
   "perf.bunnyTime": "Bunny hop time in milliseconds",
   "perf.bunnyReadonly": "This profile format has not been verified on hardware, so it is read-only.",
-  "perf.bunnyNote": "Ignores repeat clicks that land within this window, so a switch that bounces during fast click spam only registers once. Longer times filter harder; shorter times let genuine fast clicks through. {min}–{max} ms in steps of {step}.",
+  "perf.bunnyNote": "Ignores the first scroll-wheel step unless a second one follows within this window, so a stray tick does not trigger a jump bound to the wheel. It does not affect clicks. {min}–{max} ms in steps of {step}.",
   "perf.hybrid": "Hybrid",
   "perf.opticalOnly": "Optical only",
   "perf.lightforceMode": "LightForce switch mode",
@@ -466,6 +507,35 @@ const en = {
   "adv.passthrough": "Passthrough window",
   "adv.oneSecond": "1 second",
   "adv.halfSeconds": "1.5 seconds",
+  "tmr.title": "TMR-DS Actuation",
+  "tmr.leftClick": "Left click",
+  "tmr.rightClick": "Right click",
+  "tmr.mechanical": "Mechanical",
+  "tmr.analog": "TMR Analog",
+  "tmr.actuation": "Actuation point",
+  "tmr.rtSensitivity": "Rapid trigger sensitivity",
+  "tmr.release": "Release point",
+  "tmr.releaseNormal": "Normal",
+  "tmr.releaseEarly": "Early",
+  "tmr.releaseLate": "Late",
+  "tmr.smartRt": "Smart Rapid Trigger",
+  "tmr.enabled": "Enabled",
+  "tmr.disabled": "Disabled",
+  "tmr.rec": "Recommended: 220 µm",
+  "tmr.srtNote": "Follows the click mode — analog enables rapid trigger, mechanical clicks normally.",
+  "tmr.uncalibrated": "This side is not calibrated — analog mode is unavailable here.",
+  "pp.title": "PerfectPolling",
+  "pp.enabled": "Enabled",
+  "pp.latency": "Total end-to-end latency",
+  "pp.body": "Finalmouse's fixed polling pipeline: the latency and speed of 8,000 Hz with the battery life of a lower rate. There is nothing to tune here.",
+  "fprof.title": "Profiles",
+  "fprof.active": "Active profile",
+  "fprof.profileName": "Profile {n}",
+  "fprof.enable": "Enable this profile",
+  "fprof.disable": "Disable this profile",
+  "fprof.rename": "Rename this profile",
+  "fprof.renamePlaceholder": "Profile name…",
+  "fprof.renameApply": "Rename",
   "adv.filters": "Filters",
   "adv.slamclickFilter": "Slamclick filter",
   "adv.jitterFilter": "Motion-jitter filter",
@@ -520,49 +590,6 @@ const en = {
   "diag.unknown": "Unknown",
   "diag.noneHost": "None in host mode",
   "diag.linkedXY": "Linked X/Y",
-  "sup.support": "DEVICE SUPPORT",
-  "sup.requestMouse": "Request a mouse",
-  "sup.introVote": "Complete the anti-spam check, then vote for a listed mouse or submit a new request.",
-  "sup.introPaused": "Voting and new requests are temporarily paused while we add stronger abuse protection.",
-  "sup.turnstile": "Anti-spam verification",
-  "sup.searchPlaceholder": "Search manufacturer or model",
-  "sup.searchAria": "Search mouse requests",
-  "sup.protectionLoading": "Voting protection is loading",
-  "sup.completeCheck": "Complete the anti-spam check first",
-  "sup.vote": "Vote",
-  "sup.loading": "Loading",
-  "sup.noMatches": "No matching requests yet.",
-  "sup.requestDifferent": "Request a different mouse",
-  "sup.manufacturer": "Manufacturer",
-  "sup.model": "Model",
-  "sup.connection": "Connection",
-  "sup.notSure": "Not sure",
-  "sup.wiredUsb": "Wired USB",
-  "sup.wirelessUsb": "Wireless USB receiver",
-  "sup.bluetooth": "Bluetooth",
-  "sup.wiredWireless": "Wired and wireless",
-  "sup.scope": "A request covers the whole mouse: performance settings, buttons, profiles, lighting, battery information, and every other capability we can support.",
-  "sup.consent": "This submits only the fields shown here. Device diagnostics are never attached automatically.",
-  "sup.submitting": "Submitting…",
-  "sup.submit": "Submit request",
-  "sup.helpDiagnostics": "Help add support with diagnostics",
-  "sup.reviewTitle": "Review diagnostics before uploading",
-  "sup.reviewBody": "Reports may contain firmware, receiver identifiers, onboard settings, and recent HID traffic. Nothing below is uploaded until you consent.",
-  "sup.reviewAria": "Diagnostic upload review",
-  "sup.reviewConsent": "I reviewed this data and agree to upload it for this support request.",
-  "sup.upload": "Upload diagnostics",
-  "sup.loadingRequests": "Loading requests…",
-  "sup.loadFail": "Could not load requests.",
-  "sup.protectionMissing": "Voting protection is not configured.",
-  "sup.turnstileFail": "Anti-spam verification failed to load.",
-  "sup.turnstileMissing": "Anti-spam check did not load.",
-  "sup.voteRecorded": "Your vote for {item} was recorded.",
-  "sup.alreadyVoted": "You already voted for this mouse.",
-  "sup.voteFail": "Could not record your vote.",
-  "sup.saved": "Request saved. You can now vote for it from the list.",
-  "sup.saveFail": "Could not save this request.",
-  "sup.uploadedThanks": "Diagnostics uploaded separately. Thank you for helping us investigate this mouse.",
-  "sup.uploadFail": "Could not upload diagnostics.",
   "cap.title": "HID++ capture",
   "cap.closeCapture": "Close capture",
   "cap.copyVerification": "Copy verification data",
@@ -581,6 +608,7 @@ const en = {
   "prof.reload": "Reload profiles",
   "prof.deleteReset": "Delete and reset every onboard profile",
   "prof.restoreDefaults": "Permanently restore every onboard profile to Logitech defaults",
+  "prof.setUp": "Set up profiles",
   "prof.openHost": "Open host settings",
   "prof.hostAlready": "The mouse is already in host mode",
   "prof.switchHost": "Switch the mouse to host mode",
@@ -770,7 +798,7 @@ const en = {
   "ctl.progProfile": "Switching profile…",
   "ctl.switchingLayer": "Switching to {label}…",
   "ctl.readingProfiles": "Reading onboard profiles…",
-  "ctl.noProfiles": "This mouse reported no onboard profiles.",
+  "ctl.noProfiles": "No onboard profiles are saved on this mouse yet. Logitech mice normally get them when G HUB links the mouse once: open G HUB, let it detect the mouse, then reload here. Where Set up profiles is shown, OpenMouse can create them itself.",
   "ctl.noNameField": "This profile format has no name field.",
   "ctl.selectedMouse": "the selected mouse",
   "ctl.autoSleep": "Auto sleep {v}",
@@ -1049,7 +1077,7 @@ const en = {
   "macro.steps": "{n} steps",
   "macro.empty": "empty",
   "macro.notice": "Saving updates the onboard macro table on the mouse.",
-  "macro.noticeM2nex": "M2-NEX slots start blank in OpenMouse. Saving rewrites the onboard macro table.",
+  "macro.noticeWriteOnly": "Macro slots start blank in OpenMouse. Saving rewrites the onboard macro table.",
   "macro.recording": "Recording input",
   "macro.addActions": "Add actions",
   "macro.recorderHint": "Record input or add an action manually.",
@@ -1079,6 +1107,18 @@ const en = {
   "macro.helpToggle": "Need help with codes?",
   "macro.helpBody": "Delay after is the pause after that event. Keyboard codes use standard HID usage values. Modifier codes use masks 1/2/4/8/16/32/64/128; mouse codes are 1 left, 2 right, 4 middle, 8 back, 16 forward. A 0 ms delay uses the device minimum.",
   "macro.notReady": "The macro editor is not ready yet. Reopen the Buttons tab and try again.",
+  "macro.whLead": "Choose a slot, edit the steps, then Save. Assign the slot in Buttons.",
+  "macro.whLoading": "Reading the 4 macro slots…",
+  "macro.whStepType": "Step type",
+  "macro.whKey": "HID usage",
+  "macro.whButton": "Button",
+  "macro.whDirection": "Direction",
+  "macro.whUp": "Up",
+  "macro.whDown": "Down",
+  "macro.whAxis": "Axis",
+  "macro.whDelta": "Distance",
+  "macro.whAdd": "Add step",
+  "macro.whMaxSteps": "A slot holds 30 steps.",
   "m2nex.controls": "M2-NEX profile controls",
   "m2nex.overline": "PROFILE",
   "m2nex.label": "M2-NEX",
@@ -1103,6 +1143,135 @@ const en = {
   "m2nex.appliedDetail": "The mouse is now using this profile.",
   "m2nex.applyFailed": "Profile apply failed",
   "m2nex.applyError": "Unable to apply the M2-NEX profile.",
+  "kb.kochiModeNote": "Choose Windows mode for Windows or Linux, or Mac mode for macOS. Changes are confirmed by reading the keyboard back.",
+  "kb.brand": "Wuque Studio",
+  "kb.available": "Available",
+  "kb.keyboardLabel": "KEYBOARD",
+  "kb.reading": "Reading keyboard…",
+  "kb.readingTrigger": "Reading per-key triggers…",
+  "kb.applying": "Applying…",
+  "kb.readFailed": "Unable to read the keyboard.",
+  "kb.connFailed": "Keyboard connection failed",
+  "kb.connectedTo": "Connected to {name}",
+  "kb.identityFirmware": "Firmware",
+  "kb.identityApp": "App version",
+  "kb.identityPcb": "PCB version",
+  "kb.identitySerial": "Serial",
+  "kb.notReported": "Not reported",
+  "kb.pollingRate": "Polling rate",
+  "kb.pollingNote": "The polling rate the keyboard is running at, as advertised by the board.",
+  "kb.pollingApplied": "Polling rate set",
+  "kb.pollingDetail": "The keyboard now polls at {hz} Hz.",
+  "kb.pollingFailed": "Could not set the polling rate",
+  "kb.triggerTitle": "Per-key trigger",
+  "kb.selectionHint": "Click keys to select them. Click again to deselect.",
+  "kb.tuningTitle": "Tune your keys",
+  "kb.valuesFor": "Showing {key} values · changes apply to every selected key",
+  "kb.actuationGroup": "Actuation",
+  "kb.actuationHint": "How far a key travels before registering a press.",
+  "kb.rapidGroup": "Rapid trigger",
+  "kb.rapidHint": "Movement needed to retrigger or release a key.",
+  "kb.deadGroup": "Dead zones",
+  "kb.deadHint": "Ignore movement at the top and bottom of key travel.",
+  "kb.triggerNote": "Pick keys, then set how far each one travels before it triggers. Every write is confirmed by re-reading the board.",
+  "kb.travel": "Actuation travel",
+  "kb.rapidTriggerPress": "Rapid trigger press",
+  "kb.rapidTriggerRelease": "Rapid trigger release",
+  "kb.deadBandPress": "Press dead zone",
+  "kb.deadBandRelease": "Release dead zone",
+  "kb.selectAll": "Select all",
+  "kb.clearSelection": "Clear selection",
+  "kb.selectedCount": "{n} selected",
+  "kb.noKeys": "The board did not report any keys.",
+  "kb.selectPrompt": "Select a key to edit its trigger.",
+  "kb.keyPosition": "Row {row}, column {col}",
+  "kb.triggerApplied": "Trigger updated",
+  "kb.triggerAppliedDetail": "Confirmed by the keyboard for {n} key(s).",
+  "kb.triggerFailed": "Could not update the trigger",
+  "kb.geometry": "Layout style packs",
+  "kb.row": "Row",
+  "kb.col": "Column",
+  "kb.ratio": "Shape code",
+  "kb.kind": "Type",
+  "kb.sent": "Frame sent (no acknowledgement)",
+  "kb.updated": "Keyboard updated",
+  "kb.boardId": "Board ID",
+  "kb.capabilities": "Capabilities",
+  "kb.magnetic": "Magnetic switches",
+  "kb.usb": "Wired USB",
+  "kb.rgb": "Per-key RGB",
+  "kb.system": "System",
+  "kb.sleep": "Sleep timer (seconds, 0 = off)",
+  "kb.shake": "Shake optimization",
+  "kb.slot": "Configuration slot",
+  "kb.refresh": "Refresh from keyboard",
+  "kb.apply": "Apply",
+  "kb.save": "Save to keyboard",
+  "kb.saveNote": "Save the selected settings from RAM to onboard flash.",
+  "kb.scope": "Settings to save",
+  "kb.saveConfirm": "Save these settings to the keyboard’s onboard flash?",
+  "kb.layer": "Layer",
+  "kb.remap": "Key assignments",
+  "kb.keycode": "Key assignment",
+  "kb.default": "Default assignment",
+  "kb.advancedKeys": "Advanced keys",
+  "kb.readKey": "Read selected key",
+  "kb.selectKey": "Choose a key in the Performance tab first.",
+  "kb.mode": "Mode",
+  "kb.vendorMode": "Mode byte",
+  "kb.time": "Time (device units)",
+  "kb.delay": "Delay (device ticks)",
+  "kb.repetitions": "Repetitions",
+  "kb.valid": "Enabled",
+  "kb.macroSlot": "Macro slot",
+  "kb.macroRead": "Read macro",
+  "kb.addEvent": "Add action",
+  "kb.remove": "Remove",
+  "kb.actions": "Actions",
+  "kb.status": "Action flag",
+  "kb.custom": "Custom LEDs",
+  "kb.page": "Page",
+  "kb.led": "LED",
+  "kb.customFlag": "Custom colour enabled",
+  "kb.preview": "Send direct-drive frame",
+  "kb.caps": "Caps colour",
+  "kb.shell": "Shell colour",
+  "kb.correction": "Colour correction",
+  "kb.palette": "Palette",
+  "kb.blackout": "Blackout",
+  "kb.brightness": "Brightness",
+  "kb.speed": "Speed",
+  "kb.direction": "Direction",
+  "kb.staticColor": "Static palette index",
+  "kb.lightingOn": "Lighting enabled",
+  "kb.diagnostics": "Sensor diagnostics",
+  "kb.adc": "Read hall sensor",
+  "kb.release": "Release travel",
+  "kb.firstTouch": "RT first touch",
+  "kb.axisId": "Axis library ID",
+  "kb.axisRange": "Axis range maximum",
+  "kb.axisCoefficient": "Axis coefficient",
+  "kb.calibration": "Calibration flag",
+  "kb.precision": "RT precision",
+  "kb.capacity": "Macro capacity",
+  "kb.readFirst": "Read this section from the keyboard to begin.",
+  "kb.higherNote": "Select a key, read its configuration, then choose a mode.",
+  "kb.rawModeNote": "Mode bytes retain the vendor value; effect names are not yet documented.",
+  "kb.partner": "Paired key",
+  "kb.travelPoint": "Trigger point (raw byte)",
+  "kb.deadZone": "Dead zone (mm)",
+  "kb.socd": "SOCD resolution",
+  "kb.none": "None",
+  "kb.all": "All settings",
+  "kb.layout": "Key layout",
+  "kb.performance": "Performance",
+  "kb.lighting": "Lighting",
+  "kb.macro": "Macros",
+  "kb.higherKey": "Advanced keys",
+  "kb.unavailable": "Not reported",
+  "kb.readout": "Sensor ADC counts",
+  "kb.multiNote": "Bulk edits use the selected key’s values as the starting point.",
+
 } as const;
 
 export type I18nKey = keyof typeof en;
@@ -1121,6 +1290,7 @@ export const LOCALE_NAME_KEYS: ReadonlyArray<[InterfaceLocale, I18nKey]> = [
   ["ru", "set.russian"],
   ["vi", "set.vietnamese"],
   ["ar", "set.arabic"],
+  ["tr", "set.turkish"],
 ];
 
 /** Non-English tables load on demand so the initial bundle ships English
@@ -1130,6 +1300,9 @@ export const LOCALE_NAME_KEYS: ReadonlyArray<[InterfaceLocale, I18nKey]> = [
     re-render once it resolves for a stored non-English locale on first load. */
 type LocaleTable = Record<I18nKey, string>;
 const tables: Partial<Record<Exclude<InterfaceLocale, "en">, LocaleTable>> = {};
+let extraTurkish: Readonly<Record<string, string>> = {};
+type DisplayPattern = { pattern: RegExp; names: string[]; translation: string; preserveNames: boolean };
+let displayPatterns: DisplayPattern[] | undefined;
 
 /** One dynamic import per non-English locale, keyed the same way as the
     picker. Adding a language means adding its file and one line here. */
@@ -1144,6 +1317,11 @@ const LOCALE_LOADERS: Record<Exclude<InterfaceLocale, "en">, () => Promise<Local
   ru: () => import("./i18n-ru.ts").then((m) => m.ru),
   vi: () => import("./i18n-vi.ts").then((m) => m.vi),
   ar: () => import("./i18n-ar.ts").then((m) => m.ar),
+  tr: () => Promise.all([import("./i18n-tr.ts"), import("./i18n-tr-extra.ts")]).then(([main, extra]) => {
+    extraTurkish = extra.trExtra;
+    displayPatterns = undefined;
+    return main.tr;
+  }),
 };
 
 export function ensureLocale(locale: InterfaceLocale): Promise<void> {
@@ -1151,6 +1329,19 @@ export function ensureLocale(locale: InterfaceLocale): Promise<void> {
   return LOCALE_LOADERS[locale]().then((table) => {
     tables[locale] = table;
   });
+}
+
+/** Load display copy without blocking startup on a missing/offline lazy chunk.
+ * Failed loads do not populate the locale cache, so a later call can retry. */
+export async function ensureDisplayLocale(
+  locale: InterfaceLocale,
+  load: (locale: InterfaceLocale) => Promise<void> = ensureLocale,
+): Promise<void> {
+  try {
+    await load(locale);
+  } catch {
+    // t() continues to provide the existing English fallback.
+  }
 }
 
 /** Keys present in English but missing (or empty) in another locale. */
@@ -1170,6 +1361,66 @@ export async function missingTranslations(): Promise<Array<{ locale: InterfaceLo
 export function t(locale: InterfaceLocale, key: I18nKey): string {
   if (locale === "en") return en[key] ?? key;
   return tables[locale]?.[key] ?? en[key] ?? key;
+}
+
+const sourceTextKeys = new Map<string, I18nKey>(
+  (Object.keys(en) as I18nKey[]).map((key) => [en[key].replace(/\s+/g, " ").trim(), key]),
+);
+
+/** Translate display strings from legacy UI and driver catalogs at the render boundary.
+ * Never use this for protocol commands, comparisons, identifiers or saved user data. */
+export function displayText<T extends string | number | null | undefined>(locale: InterfaceLocale, value: T): T {
+  if (locale === "en" || typeof value !== "string") return value;
+  return translateDisplay(locale, value, 0) as T;
+}
+
+/** Translate complete display copy before inserting values, preserving user data. */
+export function displayTemplate(locale: InterfaceLocale, source: string, vars: Record<string, string | number>): string {
+  return displayText(locale, source).replace(/\{(\w+)\}/g, (_, name: string) => String(vars[name] ?? ""));
+}
+
+function translateDisplay(locale: InterfaceLocale, value: string, depth: number): string {
+  if (depth > 4) return value;
+  const source = value.replace(/\s+/g, " ").trim();
+  const key = sourceTextKeys.get(source);
+  const translated = locale === "tr" ? extraTurkish[source] ?? (key ? t(locale, key) : undefined) : key ? t(locale, key) : undefined;
+  const padding = (text: string) => (value.match(/^\s*/)?.[0] ?? "") + text + (value.match(/\s*$/)?.[0] ?? "");
+  if (translated !== undefined) return padding(translated);
+  if (locale !== "tr") return value;
+  if (!displayPatterns) {
+    const templates = new Map<string, string>();
+    for (const [english, key] of sourceTextKeys) if (/\{\w+\}/.test(english)) templates.set(english, t(locale, key));
+    for (const [english, turkish] of Object.entries(extraTurkish)) if (/\{\w+\}/.test(english)) templates.set(english, turkish);
+    displayPatterns = [...templates].filter(([english]) => /[a-zA-Z]{3}/.test(english.replace(/\{\w+\}/g, ""))).map(([english, translation]) => {
+      const names: string[] = [];
+      let pattern = "";
+      let end = 0;
+      for (const match of english.matchAll(/\{(\w+)\}/g)) {
+        pattern += english.slice(end, match.index).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        names.push(match[1]);
+        const pluralSuffix = match[1] === "s" && /\w$/.test(english.slice(0, match.index));
+        pattern += pluralSuffix ? "(s?)" : "(.*?)";
+        end = match.index! + match[0].length;
+      }
+      pattern += english.slice(end).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return { pattern: new RegExp(`^${pattern}$`), names, translation,
+        preserveNames: /^(?:Loaded |Saved |Deleted |Open |Opening |Name |Rename |Renaming |\{0\} has )/.test(english) || /\{name\}/.test(english) || english.startsWith("Push this profile") };
+    });
+    // Specific sentences must win over broad patterns such as "Mouse {0}".
+    displayPatterns.sort((a, b) => b.pattern.source.length - a.pattern.source.length);
+  }
+  for (const { pattern, names, translation, preserveNames } of displayPatterns) {
+    const match = pattern.exec(source);
+    if (!match) continue;
+    return padding(translation.replace(/\{(\w+)\}/g, (_, name: string) => {
+      const raw = match[names.indexOf(name) + 1] ?? "";
+      return preserveNames ? raw : translateDisplay(locale, raw, depth + 1);
+    }));
+  }
+  // Reports and connection summaries combine independently meaningful fields.
+  const separators = /(\n| · |; |, )/;
+  if (separators.test(value)) return value.split(separators).map((part, index) => index % 2 ? part : translateDisplay(locale, part, depth + 1)).join("");
+  return value;
 }
 
 /** Translate a template with {placeholders}. */

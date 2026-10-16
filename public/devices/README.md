@@ -12,8 +12,8 @@ the provenance/licensing record for every image that's been uploaded.
 Only a maintainer can upload to the bucket, so don't open a PR with a binary
 image file — it has nowhere to go. Instead:
 
-1. Open a [Device artwork request](../../.github/ISSUE_TEMPLATE/device-artwork.yml)
-   issue with a direct link to a source image (a transparent PNG/WebP is
+1. Open a [Device artwork request](https://github.com/OpenMouse-Project/openmouse/discussions/categories/artwork-request)
+   discussion with a direct link to a source image (a transparent PNG/WebP is
    ideal; a photo on a plain background is fine too) and what you know about
    its licensing.
 2. Optionally, open a PR alongside it that adds the device's
@@ -166,6 +166,11 @@ previews, but it is deliberately not committed here. Before publishing the
 asset, Noir Gear must confirm redistribution rights or OpenMouse should use a
 maintainer-created silhouette instead.
 
+`noir-s1.png` is reserved for the NOIR S1 name-fallback mapping. The code PR
+does not include a vendor configurator render; request artwork separately via
+the Device artwork request template and confirm redistribution rights before
+the asset is uploaded.
+
 `delux-m800-mini.png` — the name-fallback mapping in `src/ui/device-images.ts`
 is in place (keyed on reported names like "Delux M800 Mini", "Delux M800 Pro",
 "Delux M800 Mini (Wireless)"). The render was supplied from Delux's official
@@ -225,6 +230,11 @@ package:
 - `lamzu-maya-x.png` — Lamzu Maya X render
 - `atk-f1-v2-ultra-max.png` — ATK F1 V2 Ultra Max render
 - `finalmouse-ulx.png` — Finalmouse Starlight-12 / ULX low-profile shape render
+- `finalmouse-slx.png` — Finalmouse Starlight X (SLX) render. The name-fallback
+  mapping in `src/ui/device-images.ts` is in place (keyed on "Starlight X" /
+  "SLX", before the ULX catch-all). **Needs a maintainer upload**; until the
+  file is in the bucket the panel falls back to the placeholder. Vendor product
+  art — request licensing review before publishing it in R2.
 - `mchose-a7-v2.png` — MCHOSE A7 V2 render, from MCHOSE's own M HUB configurator
   (`https://cdn.mchose.com.cn/configCenter/assets/img/mouse/A7V2Pro_white.png`).
   MCHOSE only publishes `A7V2Pro_*` renders and the Pro / Pro+ / Ultra / Ultra+
@@ -259,3 +269,8 @@ package:
   render from Dareu's driver panel
   (`https://driver.dareu.com/allinone/products/1117/TM271F.png?v=1.3.24`). It
   is vendor product art; request licensing review before publishing it in R2.
+
+- `coolermaster-mm711.png` — Cooler Master MM711 wired gaming mouse (`0x2516:0x0101`).
+  **Needs a maintainer upload** to the `openmouse-devices` R2 bucket; the mapping in
+  `src/ui/device-images.ts` is in place and falls back cleanly to the placeholder until then.
+

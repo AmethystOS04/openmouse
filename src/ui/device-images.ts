@@ -20,7 +20,22 @@
  * how to upload new art.
  */
 
+const filenameCache = new Map<string, string>();
+
+/**
+ * Memoized wrapper: the resolver is a pure function of the display name and
+ * evaluates a long regex chain, so repeated renders of the device list reuse
+ * the result instead of recompiling every pattern.
+ */
 function resolveDeviceImageFilename(_device: HIDDevice | null | undefined, displayName = ""): string {
+  const cached = filenameCache.get(displayName);
+  if (cached !== undefined) return cached;
+  const resolved = computeDeviceImageFilename(displayName);
+  filenameCache.set(displayName, resolved);
+  return resolved;
+}
+
+function computeDeviceImageFilename(displayName: string): string {
   // Lightspeed receivers are shared product IDs, so paired G502 X variants
   // must use the friendly name read from the mouse itself.
   if (/g502\s*x\s*plus/i.test(displayName)) return "logitech-g502-x-plus.png";
@@ -68,6 +83,8 @@ function resolveDeviceImageFilename(_device: HIDDevice | null | undefined, displ
   // don't match.
   if (/\battack\s*shark\s*x3\b/i.test(displayName)) return "attackshark-x3.png";
   if (/\bm[23]k\b/i.test(displayName)) return "zaunkoenig-m3k.png";
+  // Name, not PID: over the ROG Omni receiver the device is 0x1ACE.
+  if (/\bharpe\s*ace\s*aim\s*lab\b/i.test(displayName)) return "asus-rog-harpe-ace-aim-lab.png";
   if (/\bmx\s*master\s*3s\b/i.test(displayName)) return "logitech-mx-master-3s.png";
   if (/\bterra\s*pro\b/i.test(displayName)) return "teevolution-terra-pro.png";
   if (/\bm-001\b/i.test(displayName)) return "wallhack-m-001.png";
@@ -122,6 +139,7 @@ function resolveDeviceImageFilename(_device: HIDDevice | null | undefined, displ
   if (/\bsword\s*x\b/i.test(displayName)) return "wlmouse-sword-x.png";
   if (/\bdragonfly\s*f2\b/i.test(displayName)) return "vgn-dragonfly-f2.png";
   if (/\bmaya\s*x\b/i.test(displayName)) return "lamzu-maya-x.png";
+  if (/\bnoir\s*s1\b/i.test(displayName)) return "noir-s1.png";
   if (/k[\s-]*snake/i.test(displayName)) return "ksnake-x11.png";
   if (/\bf1\s*v2\b/i.test(displayName)) return "atk-f1-v2-ultra-max.png";
   // Catches any A7 variant whose product id is not pinned above. V3 first, so
@@ -129,6 +147,7 @@ function resolveDeviceImageFilename(_device: HIDDevice | null | undefined, displ
   if (/\ba7\s*v3\b/i.test(displayName)) return "mchose-a7-v3.png";
   if (/\ba7\s*v2\b/i.test(displayName)) return "mchose-a7-v2.png";
   if (/\ba950\s*pro\s*mg\b/i.test(displayName)) return "dareu-a950-pro-mg.png";
+  if (/\bmm711\b/i.test(displayName)) return "coolermaster-mm711.png";
   // NinjaForce/Ninjutso family — V3 first so "Sora V3" isn't swallowed by a
   // looser V2 or "Ten" match.
   if (/\bsora\s*v3\b/i.test(displayName)) return "ninjutso-sora-v3.png";
@@ -157,6 +176,10 @@ function resolveDeviceImageFilename(_device: HIDDevice | null | undefined, displ
   if (/\bzero\s*39\s*pro\b/i.test(displayName)) return "incott-zero-39-pro.png";
   if (/\bzero\s*39\b/i.test(displayName)) return "incott-zero-39.png";
   if (/\bkeychron\s*m6\b/i.test(displayName)) return "keychron-m6.png";
+  // Starlight X is a different shell from the ULX/Starlight-12, so it gets its
+  // own render instead of borrowing the ULX's. Until the file is uploaded the
+  // panel falls back to the placeholder at image-load time.
+  if (/\bstarlight\s*x\b|\bslx\b/i.test(displayName)) return "finalmouse-slx.png";
   if (/\b(finalmouse|starlight|ulx)\b/i.test(displayName)) return "finalmouse-ulx.png";
   if (/\borbital\b/i.test(displayName)) return "unknown-device.png";
   if (/\bmoddo/i.test(displayName)) return "unknown-device.png";
@@ -171,6 +194,10 @@ function resolveDeviceImageFilename(_device: HIDDevice | null | undefined, displ
   // retail shell. Keep its artwork match name-based so USB and 2.4 GHz
   // receiver connections resolve to the same product image.
   if (/m2\s*[-_]?\s*nex/i.test(displayName)) return "noir-m2-nex.png";
+  // M1-NEX wired support uses Noir Gear's own reported model name. Match the
+  // full model token so Noir M1 and M1 Lite keep their own artwork/placeholder.
+  if (/\bm1\s*[-_]?\s*nex\b/i.test(displayName)) return "noir-m1-nex.png";
+  if (/\bnoir\s*e1\b/i.test(displayName)) return "noir-e1.png";
   if (/fantech/i.test(displayName)) return "unknown-device.png";
   return "unknown-device.png";
 }
@@ -199,6 +226,7 @@ const LOCAL_OVERRIDES: Readonly<Record<string, string>> = {
   "attackshark-r2.png": "/devices/attackshark-r2.png",
   "delux-m800-mini.png": "/devices/delux-m800-mini.png",
   "ipi-float-88.png": "/devices/ipi-float-88.png",
+  "asus-rog-harpe-ace-aim-lab.png": "/devices/asus-rog-harpe-ace-aim-lab.png",
 };
 
 export function deviceImage(device: HIDDevice | null | undefined, displayName = ""): string {
