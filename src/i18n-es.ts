@@ -381,7 +381,7 @@ export const es: Record<I18nKey, string> = {
   "perf.bunnyHop": "Bunny hop",
   "perf.bunnyTime": "Tiempo de bunny hop en milisegundos",
   "perf.bunnyReadonly": "Este formato de perfil no se ha verificado en hardware, así que es de solo lectura.",
-  "perf.bunnyNote": "Ignora clics repetidos que caen dentro de esta ventana, para que un switch que rebota durante clics rápidos solo se registre una vez. Tiempos más largos filtran más; tiempos más cortos dejan pasar clics rápidos genuinos. {min}–{max} ms en pasos de {step}.",
+  "perf.bunnyNote": "Ignora el primer paso de la rueda de desplazamiento salvo que llegue otro dentro de esta ventana, para que un toque accidental no active un salto asignado a la rueda. No afecta a los clics. {min}–{max} ms en pasos de {step}.",
   "perf.hybrid": "Híbrido",
   "perf.opticalOnly": "Solo óptico",
   "perf.lightforceMode": "Modo de switch LightForce",

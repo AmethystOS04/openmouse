@@ -368,7 +368,7 @@ export const tr: Record<I18nKey, string> = {
   "perf.bunnyHop": "Art arda zıplama",
   "perf.bunnyTime": "Bunny hop süresi (milisaniye)",
   "perf.bunnyReadonly": "Bu profil biçimi donanımda doğrulanmadığı için salt okunurdur.",
-  "perf.bunnyNote": "Bu süre içindeki tekrarlı tıklamaları yok sayar; hızlı tıklarken temas sıçraması yapan anahtar yalnızca bir kez algılanır. Uzun süreler daha güçlü filtreler, kısa süreler gerçek hızlı tıklamaları geçirir. {step} adımlarla {min}–{max} ms.",
+  "perf.bunnyNote": "Bu süre içinde ikinci bir tekerlek adımı gelmezse ilk kaydırma tekerleği adımını yok sayar; böylece yanlışlıkla yapılan kaydırma, tekerleğe atanmış zıplamayı tetiklemez. Tıklamaları etkilemez. {step} adımlarla {min}–{max} ms.",
   "perf.hybrid": "Hibrit",
   "perf.opticalOnly": "Yalnızca optik",
   "perf.lightforceMode": "LightForce anahtar modu",

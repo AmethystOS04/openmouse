@@ -381,7 +381,7 @@ export const ko: Record<I18nKey, string> = {
   "perf.bunnyHop": "버니 홉",
   "perf.bunnyTime": "버니 홉 시간(밀리초)",
   "perf.bunnyReadonly": "이 프로필 형식은 하드웨어에서 검증되지 않아 읽기 전용입니다.",
-  "perf.bunnyNote": "이 시간 범위 내에 발생한 반복 클릭을 무시하여, 빠른 클릭 반복 시 스위치 바운싱으로 인한 중복 입력이 한 번만 기록되도록 합니다. 시간이 길수록 더 강하게 필터링하고, 짧을수록 진짜 빠른 클릭이 통과합니다. {min}–{max}ms, {step} 단위.",
+  "perf.bunnyNote": "이 시간 안에 두 번째 휠 입력이 없으면 첫 번째 스크롤 휠 입력을 무시하여, 실수로 굴린 휠이 휠에 지정된 점프를 실행하지 않도록 합니다. 클릭에는 영향을 주지 않습니다. {min}–{max}ms, {step} 단위.",
   "perf.hybrid": "하이브리드",
   "perf.opticalOnly": "광학 전용",
   "perf.lightforceMode": "LightForce 스위치 모드",
