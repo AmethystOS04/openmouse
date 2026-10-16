@@ -1790,9 +1790,18 @@ export function applyGameProfileSnapshot(snapshot: GameProfileSnapshot): void {
     else applySensorMode(s.sensorMode);
   }
   if (s.powerMode) applyPowerMode(s.powerMode);
+  // An Egg mouse whose 8K mode drops Motion Sync cannot take both from one
+  // profile: the driver clears Motion Sync when it writes 8,000 Hz and refuses
+  // to turn it back on there, so staging both would abort the flash after the
+  // rate had already landed. The hardware's answer is the only one, so the
+  // request follows it rather than being refused mid-flash.
+  const motionSyncAt8k = status.eggMotionSyncAt8k === false
+    && (s.pollingRateHz ?? status.pollingRateHz) >= 8000;
   for (const field of PULSAR_TOGGLE_FIELDS) {
-    const value = s[field];
-    if (typeof value === "boolean") applyPulsarToggle(field, value);
+    let value = s[field];
+    if (typeof value !== "boolean") continue;
+    if (field === "motionSync" && motionSyncAt8k) value = false;
+    applyPulsarToggle(field, value);
   }
   if (s.debounceMs != null) applyPulsarValue("debounce", s.debounceMs);
   if (s.sleepTimeout != null) applyPulsarValue("sleep", s.sleepTimeout);
@@ -1829,6 +1838,10 @@ export function applyGameProfileSnapshot(snapshot: GameProfileSnapshot): void {
   if (s.dpiLedSpeed != null) applyTeevolutionDpiLighting("speed", s.dpiLedSpeed);
   if (s.dpiLedSleepTimeout != null) applyDpiLightingSleepTimeout(s.dpiLedSleepTimeout);
 
+  // Handedness is deliberately not part of a game profile: the firmware
+  // rewrites both main buttons to their swapped defaults when it changes, so a
+  // profile could neither keep nor restore a custom mapping — see
+  // GAME_PROFILE_FIELDS and applyEggLeftHanded.
   if (typeof s.slamclickFilter === "boolean") applyEggFilter("slamclick", s.slamclickFilter);
   if (typeof s.motionJitterFilter === "boolean") applyEggFilter("motionJitter", s.motionJitterFilter);
   if (s.leftSpdtMode) applyEggSpdtMode("left", s.leftSpdtMode);
@@ -1839,6 +1852,10 @@ export function applyGameProfileSnapshot(snapshot: GameProfileSnapshot): void {
   s.eggMulticlickFilters?.forEach((value, button) => applyEggMulticlick(button as EggButtonIndex, value));
   s.eggButtonMappings?.forEach((mapping, button) =>
     applyEggButtonMapping(button as EggButtonIndex, mapping as EggButtonMapping));
+  if (s.eggLodIndex != null) applyEggLodIndex(s.eggLodIndex);
+  if (s.eggAngleTuning != null) applyEggAngleTuning(s.eggAngleTuning);
+  if (typeof s.eggForceMaxFps === "boolean") applyEggForceMaxFps(s.eggForceMaxFps);
+  if (typeof s.eggLedLiftOffDisabled === "boolean") applyEggLedLiftOff(s.eggLedLiftOffDisabled);
 
   for (const [button, action] of Object.entries(s.buttonMappings ?? {})) applyDeviceButtonMapping(button, action);
   for (const [control, mapping] of Object.entries(s.razerButtonMappings ?? {})) {
@@ -5812,6 +5829,91 @@ export function applyEggButtonMapping(button: EggButtonIndex, mapping: EggButton
       if (status.eggButtonMappings) status.eggButtonMappings[button] = mapping;
     },
     change: async (client) => client.setButtonMapping(button, mapping),
+  });
+}
+
+/**
+ * Lift-off by the mouse's own list index, so the millimetre values the driver
+ * publishes (0.7–1.7 mm on a v2 mouse) can be picked directly instead of being
+ * squeezed into the three shared Low/Medium/High stops — only three of which
+ * any v2 millimetre value even maps to.
+ */
+export function applyEggLodIndex(index: number): void {
+  // A profile can name an entry this mouse does not have: the v2 list is eleven
+  // long and a v1's three, and switching glass mode on shrinks it to two. The
+  // driver rejects such an index outright, so it follows the rule every other
+  // field the connected mouse cannot hold follows — ignored, not flashed into a
+  // failed write that stops a profile half-applied.
+  const label = latestDeviceStatus?.eggLodOptions?.[index];
+  if (label === undefined) return;
+  stageEggChange({
+    key: "egg-lod",
+    label: `Lift-off ${label}`,
+    what: "lift-off distance",
+    preview: (status) => {
+      status.eggLodIndex = index;
+      status.liftOffDistance = eggLodLevel(label);
+    },
+    change: async (client) => client.setEggLodIndex(index),
+  });
+}
+
+/** The driver's own mapping from its millimetre labels to the shared stops. */
+function eggLodLevel(label: string | undefined): MouseStatus["liftOffDistance"] {
+  if (label === "0.7 mm") return "Low";
+  if (label === "1 mm" || label === "1.0 mm") return "Medium";
+  if (label === "2 mm" || label === "2.0 mm") return "High";
+  return null;
+}
+
+/** v2 mice only: a raw signed sensor-angle offset. */
+export function applyEggAngleTuning(value: number): void {
+  stageEggChange({
+    key: "egg-angle-tuning",
+    label: `Sensor angle tuning ${value}`,
+    what: "sensor angle tuning",
+    preview: (status) => {
+      status.eggAngleTuning = value;
+    },
+    change: async (client) => client.setSensorAngleTuning(value),
+  });
+}
+
+/** v2 mice only: keeps the sensor at its highest frame rate. */
+export function applyEggForceMaxFps(enabled: boolean): void {
+  stageEggChange({
+    key: "egg-force-max-fps",
+    label: `Force max sensor FPS ${enabled ? "on" : "off"}`,
+    what: "max sensor FPS",
+    preview: (status) => {
+      status.eggForceMaxFps = enabled;
+    },
+    change: async (client) => client.setForceMaxSensorFps(enabled),
+  });
+}
+
+/** v2 mice only: turns the LED off while the mouse is lifted. */
+export function applyEggLedLiftOff(enabled: boolean): void {
+  stageEggChange({
+    key: "egg-led-lift-off",
+    label: `LED on lift-off ${enabled ? "off" : "on"}`,
+    what: "lift-off LED",
+    preview: (status) => {
+      status.eggLedLiftOffDisabled = enabled;
+    },
+    change: async (client) => client.setLedLiftOffDisabled(enabled),
+  });
+}
+
+export function applyEggLeftHanded(enabled: boolean): void {
+  stageEggChange({
+    key: "egg-handed",
+    label: `Left-handed mode ${enabled ? "on" : "off"}`,
+    what: "handedness",
+    preview: (status) => {
+      status.eggLeftHanded = enabled;
+    },
+    change: async (client) => client.setLeftHanded(enabled),
   });
 }
 

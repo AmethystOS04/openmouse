@@ -223,7 +223,13 @@ const BUDGET_BYTES: Record<string, number> = {
   // messages and dialog copy. The two Turkish dictionaries remain lazy
   // chunks. The measured aggregate is about 2,620 kB, including render-boundary
   // localization; no additional CSS framework or runtime dependency is added.
-  ".js": 2_630_000,
+  // Raised to 2,640 kB for the Endgame Gear OP1-8K control panel: the section
+  // the missing family tag had kept dark adds the sensor-controls, handedness
+  // and lift-off cards plus two strings across twelve locales, taking the
+  // measured aggregate from 2,629.5 kB to 2,632.2 kB — over the old budget by
+  // 2.2 kB, which itself had only 545 bytes of headroom, so any new localized
+  // string would have tripped it.
+  ".js": 2_640_000,
 };
 
 const ASSETS = join("dist", "assets");
