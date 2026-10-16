@@ -379,6 +379,11 @@ export function ProcessingCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
   const hyperLabel = status.brand === "WLMouse" ? t(locale, "adv.highSpeed") : t(locale, "adv.hyperMode");
   // Pulsar Pro shows the angle with the rest of its Pro-only settings.
   const angleTuning = isPulsarProProtocol(status) ? null : status.angleTuning;
+  // The 8K EGG mice drop Motion Sync at 8,000 Hz and the driver refuses that
+  // write outright, so the toggle is disabled rather than left to fail.
+  const motionSyncBlocked = snapshot.traits.eggControls
+    && status.eggMotionSyncAt8k === false
+    && (status.pollingRateHz ?? 0) >= 8000;
 
   const performanceLabel = status.brand === "CRDRAKO"
     ? t(locale, "adv.competitive")
@@ -432,8 +437,12 @@ export function ProcessingCard({ snapshot }: { snapshot: ControlSnapshot }): Rea
         label="Motion Sync"
         value={status.motionSync}
         hidden={ui?.hideMotionSync === true}
+        disabled={motionSyncBlocked}
         onChange={(next) => control.applyPulsarToggle("motionSync", next)}
       />
+      {motionSyncBlocked ? (
+        <small id="motion-sync-note" className="setting-note">{t(locale, "adv.eggMotionSync8k")}</small>
+      ) : null}
       <SwitchRow
         id="angle-snapping-toggle"
         label={angleSnappingLabel}
@@ -982,6 +991,88 @@ export function EggSpdtCard({ snapshot }: { snapshot: ControlSnapshot }): ReactN
   );
 }
 
+/**
+ * The sensor controls only a "v2" mouse carries (OP1/XM2 8K v2 and the 4K v2
+ * wireless pair). Angle tuning is a raw signed byte in this firmware, so it is
+ * a typed field with Apply rather than a slider labelled in degrees the driver
+ * never promised.
+ */
+export function EggV2SensorCard({ snapshot }: { snapshot: ControlSnapshot }): ReactNode {
+  const status = snapshot.status;
+  if (!status) return null;
+  const locale = snapshot.preferences.locale;
+  const stored = status.eggAngleTuning ?? 0;
+  const [tuning, setTuning] = useState<number>(stored);
+  useEffect(() => {
+    setTuning(stored);
+  }, [stored]);
+  const valid = Number.isInteger(tuning) && tuning >= -127 && tuning <= 127;
+  return (
+    <article id="egg-v2-sensor-settings" className="setting-card">
+      <div className="setting-heading compact"><div><p>SENSOR</p><h2>{t(locale, "adv.eggSensor")}</h2></div></div>
+      <div className="field-label">
+        <span>{t(locale, "adv.eggAngleTuning")}</span>
+        <input
+          id="egg-angle-tuning"
+          className="egg-tile-field"
+          type="number"
+          min={-127}
+          max={127}
+          step={1}
+          value={tuning}
+          disabled={snapshot.settingInProgress}
+          onChange={(event) => setTuning(Number(event.currentTarget.value))}
+        />
+      </div>
+      <small className="setting-note">{t(locale, "adv.eggAngleTuningNote")}</small>
+      <button
+        id="apply-egg-angle-tuning"
+        className="egg-action-button"
+        type="button"
+        disabled={!valid || snapshot.settingInProgress || tuning === stored}
+        onClick={() => control.applyEggAngleTuning(tuning)}
+      >
+        {t(locale, "common.apply")}
+      </button>
+      <SwitchRow
+        id="egg-force-max-fps-toggle"
+        label={t(locale, "adv.eggForceMaxFps")}
+        value={status.eggForceMaxFps}
+        onChange={(next) => control.applyEggForceMaxFps(next)}
+      />
+      <SwitchRow
+        id="egg-led-lift-off-toggle"
+        label={t(locale, "adv.eggLedLiftOff")}
+        value={status.eggLedLiftOffDisabled}
+        onChange={(next) => control.applyEggLedLiftOff(next)}
+      />
+    </article>
+  );
+}
+
+/**
+ * Swaps the primary buttons for left-hand use. The mapping card cannot express
+ * it — the firmware refuses to move whichever button is primary in the current
+ * handedness — so it needs its own switch.
+ */
+export function EggHandedCard({ snapshot }: { snapshot: ControlSnapshot }): ReactNode {
+  const status = snapshot.status;
+  if (!status) return null;
+  const locale = snapshot.preferences.locale;
+  return (
+    <article id="egg-handed-settings" className="setting-card">
+      <div className="setting-heading compact"><div><p>CLICK</p><h2>{t(locale, "adv.eggHanded")}</h2></div></div>
+      <SwitchRow
+        id="egg-handed-toggle"
+        label={t(locale, "adv.eggHanded")}
+        value={status.eggLeftHanded}
+        onChange={(next) => control.applyEggLeftHanded(next)}
+      />
+      <small className="setting-note">{t(locale, "adv.eggHandedNote")}</small>
+    </article>
+  );
+}
+
 export function EggPollingCard({ snapshot }: { snapshot: ControlSnapshot }): ReactNode {
   const locale = snapshot.preferences.locale;
   const divider = snapshot.eggPollingDivider;
@@ -1036,10 +1127,12 @@ function CpiStageRow({
   index,
   stage,
   locale,
+  limits,
 }: {
   index: number;
   stage: { x: number; y: number };
   locale: InterfaceLocale;
+  limits: { min: number; max: number; stepLow: number; stepHigh: number };
 }): ReactNode {
   const [split, setSplit] = useState(stage.x !== stage.y);
   const [x, setX] = useState(stage.x);
@@ -1049,6 +1142,9 @@ function CpiStageRow({
     setX(stage.x);
     setY(stage.y);
   }, [stage.x, stage.y]);
+  // The protocol's own step rule: the fine step runs up to 10,000 CPI on the
+  // v2 generation, whose 10-CPI resolution below it has no match above.
+  const stepFor = (value: number): number => (value <= 10_000 ? limits.stepLow : limits.stepHigh);
   return (
     <div>
       <strong>{tp(locale, "adv.stage", { n: index + 1 })}</strong>
@@ -1062,9 +1158,9 @@ function CpiStageRow({
           <input
             className="egg-tile-field"
             type="number"
-            min={50}
-            max={26000}
-            step={50}
+            min={limits.min}
+            max={limits.max}
+            step={stepFor(x)}
             value={x}
             onChange={(event) => setX(Number(event.currentTarget.value))}
           />
@@ -1074,9 +1170,9 @@ function CpiStageRow({
           <input
             className="egg-tile-field"
             type="number"
-            min={50}
-            max={26000}
-            step={50}
+            min={limits.min}
+            max={limits.max}
+            step={stepFor(y)}
             value={y}
             disabled={!split}
             onChange={(event) => setY(Number(event.currentTarget.value))}
@@ -1096,6 +1192,14 @@ export function EggCpiCard({ snapshot }: { snapshot: ControlSnapshot }): ReactNo
   const locale = snapshot.preferences.locale;
   const stages = status.eggCpiStages;
   const levels = status.eggCpiLevels ?? 0;
+  // The mouse's own limits, not a hardcoded 50–26,000: the v2 generation takes
+  // 10–30,000 CPI in 10-CPI steps up to 10,000 and 50-CPI steps above.
+  const limits = {
+    min: status.eggCpiMin ?? 50,
+    max: status.eggCpiMax ?? 26_000,
+    stepLow: status.eggCpiStepLow ?? 50,
+    stepHigh: status.eggCpiStepHigh ?? 50,
+  };
   return (
     <Collapsible
       id="egg-cpi-settings"
@@ -1120,7 +1224,7 @@ export function EggCpiCard({ snapshot }: { snapshot: ControlSnapshot }): ReactNo
         </div>
         <div id="egg-cpi-stage-list">
           {stages?.slice(0, levels).map((stage, index) => (
-            <CpiStageRow key={index} index={index} stage={stage} locale={locale} />
+            <CpiStageRow key={index} index={index} stage={stage} locale={locale} limits={limits} />
           ))}
         </div>
       </article>

@@ -1433,6 +1433,11 @@ export function applyGameProfileSnapshot(snapshot: GameProfileSnapshot): void {
   s.eggMulticlickFilters?.forEach((value, button) => applyEggMulticlick(button as EggButtonIndex, value));
   s.eggButtonMappings?.forEach((mapping, button) =>
     applyEggButtonMapping(button as EggButtonIndex, mapping as EggButtonMapping));
+  if (s.eggLodIndex != null) applyEggLodIndex(s.eggLodIndex);
+  if (s.eggAngleTuning != null) applyEggAngleTuning(s.eggAngleTuning);
+  if (typeof s.eggForceMaxFps === "boolean") applyEggForceMaxFps(s.eggForceMaxFps);
+  if (typeof s.eggLedLiftOffDisabled === "boolean") applyEggLedLiftOff(s.eggLedLiftOffDisabled);
+  if (typeof s.eggLeftHanded === "boolean") applyEggLeftHanded(s.eggLeftHanded);
 
   for (const [button, action] of Object.entries(s.buttonMappings ?? {})) applyDeviceButtonMapping(button, action);
   for (const [control, mapping] of Object.entries(s.razerButtonMappings ?? {})) {
@@ -4636,6 +4641,85 @@ export function applyEggButtonMapping(button: EggButtonIndex, mapping: EggButton
       if (status.eggButtonMappings) status.eggButtonMappings[button] = mapping;
     },
     change: async (client) => client.setButtonMapping(button, mapping),
+  });
+}
+
+/**
+ * Lift-off by the mouse's own list index, so the millimetre values the driver
+ * publishes (0.7–1.7 mm on a v2 mouse) can be picked directly instead of being
+ * squeezed into the three shared Low/Medium/High stops — only three of which
+ * any v2 millimetre value even maps to.
+ */
+export function applyEggLodIndex(index: number): void {
+  const label = latestDeviceStatus?.eggLodOptions?.[index];
+  stageEggChange({
+    key: "egg-lod",
+    label: `Lift-off ${label ?? `index ${index}`}`,
+    what: "lift-off distance",
+    preview: (status) => {
+      status.eggLodIndex = index;
+      status.liftOffDistance = eggLodLevel(label);
+    },
+    change: async (client) => client.setEggLodIndex(index),
+  });
+}
+
+/** The driver's own mapping from its millimetre labels to the shared stops. */
+function eggLodLevel(label: string | undefined): MouseStatus["liftOffDistance"] {
+  if (label === "0.7 mm") return "Low";
+  if (label === "1 mm" || label === "1.0 mm") return "Medium";
+  if (label === "2 mm" || label === "2.0 mm") return "High";
+  return null;
+}
+
+/** v2 mice only: a raw signed sensor-angle offset. */
+export function applyEggAngleTuning(value: number): void {
+  stageEggChange({
+    key: "egg-angle-tuning",
+    label: `Sensor angle tuning ${value}`,
+    what: "sensor angle tuning",
+    preview: (status) => {
+      status.eggAngleTuning = value;
+    },
+    change: async (client) => client.setSensorAngleTuning(value),
+  });
+}
+
+/** v2 mice only: keeps the sensor at its highest frame rate. */
+export function applyEggForceMaxFps(enabled: boolean): void {
+  stageEggChange({
+    key: "egg-force-max-fps",
+    label: `Force max sensor FPS ${enabled ? "on" : "off"}`,
+    what: "max sensor FPS",
+    preview: (status) => {
+      status.eggForceMaxFps = enabled;
+    },
+    change: async (client) => client.setForceMaxSensorFps(enabled),
+  });
+}
+
+/** v2 mice only: turns the LED off while the mouse is lifted. */
+export function applyEggLedLiftOff(enabled: boolean): void {
+  stageEggChange({
+    key: "egg-led-lift-off",
+    label: `LED on lift-off ${enabled ? "off" : "on"}`,
+    what: "lift-off LED",
+    preview: (status) => {
+      status.eggLedLiftOffDisabled = enabled;
+    },
+    change: async (client) => client.setLedLiftOffDisabled(enabled),
+  });
+}
+
+export function applyEggLeftHanded(enabled: boolean): void {
+  stageEggChange({
+    key: "egg-handed",
+    label: `Left-handed mode ${enabled ? "on" : "off"}`,
+    what: "handedness",
+    preview: (status) => {
+      status.eggLeftHanded = enabled;
+    },
+    change: async (client) => client.setLeftHanded(enabled),
   });
 }
 
