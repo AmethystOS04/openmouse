@@ -4663,10 +4663,16 @@ export function applyEggButtonMapping(button: EggButtonIndex, mapping: EggButton
  * any v2 millimetre value even maps to.
  */
 export function applyEggLodIndex(index: number): void {
+  // A profile can name an entry this mouse does not have: the v2 list is eleven
+  // long and a v1's three, and switching glass mode on shrinks it to two. The
+  // driver rejects such an index outright, so it follows the rule every other
+  // field the connected mouse cannot hold follows — ignored, not flashed into a
+  // failed write that stops a profile half-applied.
   const label = latestDeviceStatus?.eggLodOptions?.[index];
+  if (label === undefined) return;
   stageEggChange({
     key: "egg-lod",
-    label: `Lift-off ${label ?? `index ${index}`}`,
+    label: `Lift-off ${label}`,
     what: "lift-off distance",
     preview: (status) => {
       status.eggLodIndex = index;
