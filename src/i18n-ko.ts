@@ -323,6 +323,7 @@ export const ko: Record<I18nKey, string> = {
   "dpi.activeStage": "현재 단계",
   "dpi.makeActive": "이 단계를 현재 단계로 설정",
   "dpi.stageDpi": "단계 {n}의 DPI",
+  "dpi.stageDpiY": "단계 {n}의 Y축 DPI",
   "dpi.color": "색상",
   "dpi.stageColor": "단계 {n}의 색상",
   "dpi.stageNoteCount": "프리셋과 사용자 지정은 강조 표시된 단계를 편집합니다. {min}–{max} DPI. 마우스의 DPI 버튼으로 이 단계들을 순환합니다.",

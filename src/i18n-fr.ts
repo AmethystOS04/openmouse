@@ -323,6 +323,7 @@ export const fr: Record<I18nKey, string> = {
   "dpi.activeStage": "Étape active",
   "dpi.makeActive": "En faire l'étape active",
   "dpi.stageDpi": "DPI de l'étape {n}",
+  "dpi.stageDpiY": "DPI Y de l'étape {n}",
   "dpi.color": "Couleur",
   "dpi.stageColor": "Couleur de l'étape {n}",
   "dpi.stageNoteCount": "Préréglages et Personnalisé modifient l'étape en surbrillance. {min}–{max} DPI. Le bouton DPI de la souris parcourt ces étapes.",

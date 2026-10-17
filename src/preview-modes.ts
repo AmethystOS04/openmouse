@@ -42,6 +42,7 @@ export const PREVIEW_KEYS = [
   "rawm-v4-gt",
   "terra-pro",
   "logitech-legacy",
+  "steelseries-gen2",
 ] as const;
 
 export type PreviewMode = typeof PREVIEW_KEYS[number];
@@ -95,6 +96,7 @@ export function parsePreviewMode(value: string | null): PreviewMode | null {
     case "gwolves-pro": return "gwolves-pro";
     case "rawm-v4-gt": return "rawm-v4-gt";
     case "logitech-legacy": return "logitech-legacy";
+    case "steelseries-gen2": return "steelseries-gen2";
     default: return null;
   }
 }

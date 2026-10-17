@@ -1041,6 +1041,42 @@ const RAWM_V4_GT: MouseStatus = {
 };
 
 /**
+ * The shape the SteelSeries Gen 2 families report once the protocol publishes
+ * the five-slot preset table they already track. Today the drivers report only
+ * the active stage's X, so this fixture is the only place the per-stage Y
+ * column can be exercised; the stages whose X and Y differ model a mouse whose
+ * axes were written separately. See `steelseriesStagePreviewClient`, which
+ * stands in for the driver so the column can be edited here.
+ */
+const STEELSERIES_GEN2: MouseStatus = {
+  brand: "SteelSeries",
+  name: "SteelSeries Rival 3 Wireless Gen 2",
+  ui: {
+    family: "steelseries-rival3-wireless-v2",
+    settingsReady: true,
+    valuesVerified: false,
+    hideUnsupportedPollingRates: true,
+    hideProcessingCard: true,
+    pollingNote: "The Rival 3 Wireless Gen 2 cannot report its current DPI or polling rate; values shown are the last written by this app, or assumed defaults.",
+    defaultDisplayName: "SteelSeries Rival 3 Wireless Gen 2",
+    dpiStageEditor: { maxStages: 5, countEditable: false, minDpi: 100, maxDpi: 18000, stepDpi: 100 },
+  },
+  batteryPercent: 78,
+  batteryState: "Discharging",
+  dpi: 1600,
+  dpiY: 1600,
+  dpiStages: [400, 800, 1600, 3200, 6400],
+  dpiStagesY: [200, 800, 1600, 1600, 6400],
+  activeDpiStage: 2,
+  pollingRateHz: 1000,
+  supportedPollingRates: [125, 250, 500, 1000],
+  activeProfile: null,
+  liftOffDistance: null,
+  connectionType: "Wireless",
+  firmware: ["1.5"],
+};
+
+/**
  * Keyed by the `?preview=` value. `superstrike` and `slots` are handled
  * separately because they drive panels beyond a plain status.
  */
@@ -1079,4 +1115,5 @@ export const PREVIEW_FIXTURES: Record<FixturePreviewMode, PreviewFixture> = {
   "gwolves-pro": { label: "G-Wolves HTS Plus Pro", status: GWOLVES_PRO },
   "rawm-v4-gt": { label: "RAWM Leviathan V4 GT", status: RAWM_V4_GT },
   "logitech-legacy": { label: "Logitech G402 (legacy DPI)", status: LOGITECH_LEGACY },
+  "steelseries-gen2": { label: "SteelSeries Rival 3 Wireless Gen 2", status: STEELSERIES_GEN2 },
 };

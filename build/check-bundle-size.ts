@@ -233,8 +233,9 @@ const BUDGET_BYTES: Record<string, number> = {
   // SteelSeries drivers arrive through the shared registry (the Aerox 3
   // Wireless Gen 2, Rival 3 Gen 2, and Rival 3 Wireless Gen 2 preset families
   // plus the Rival 100/110/300/5/600, Sensei 310/Raw/Rival Pro, and Prime Mini
-  // codecs). The measured aggregate is 2,711.6 kB, 71.6 kB over the old
-  // 2,640 kB budget, leaving ~8.4 kB of headroom.
+  // codecs). The per-stage X/Y column adds a few hundred bytes of its own. The
+  // measured aggregate is 2,714.4 kB, 74.4 kB over the old 2,640 kB budget,
+  // leaving ~5.6 kB of headroom.
   ".js": 2_720_000,
 };
 

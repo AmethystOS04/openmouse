@@ -142,3 +142,18 @@ test("egg-ot fixture matches the OP1 RGB driver shape", () => {
   assert.equal(status.profileCount, 5);
   assert.equal(snapshotFor("egg-ot").traits.eggFamily, true);
 });
+
+test("steelseries-gen2 fixture pairs its stage table with the Y table", () => {
+  // The per-stage Y column renders one input per stage row, so the two tables
+  // have to stay the same length and the active stage has to agree with both.
+  const { status } = PREVIEW_FIXTURES["steelseries-gen2"];
+  assert.equal(status.brand, "SteelSeries");
+  assert.equal(familyOf(status), "steelseries-rival3-wireless-v2");
+  assert.equal(status.dpiStages?.length, status.ui?.dpiStageEditor?.maxStages);
+  assert.equal(status.dpiStagesY?.length, status.dpiStages?.length);
+  const active = status.activeDpiStage ?? 0;
+  assert.equal(status.dpi, status.dpiStages?.[active]);
+  assert.equal(status.dpiY, status.dpiStagesY?.[active]);
+  // A fixture whose axes never differ would not exercise the column at all.
+  assert.notDeepEqual(status.dpiStagesY, status.dpiStages);
+});
