@@ -324,6 +324,8 @@ export const zh: Record<I18nKey, string> = {
   "dpi.makeActive": "设为当前阶段",
   "dpi.stageDpi": "阶段 {n} 的 DPI",
   "dpi.stageDpiY": "阶段 {n} 的 Y 轴 DPI",
+  "dpi.axisX": "X 轴",
+  "dpi.axisY": "Y 轴",
   "dpi.color": "颜色",
   "dpi.stageColor": "阶段 {n} 的颜色",
   "dpi.stageNoteCount": "预设和自定义会编辑高亮的阶段。{min}–{max} DPI。鼠标上的 DPI 按键会循环切换这些阶段。",

@@ -324,6 +324,8 @@ export const es: Record<I18nKey, string> = {
   "dpi.makeActive": "Hacer de esta la etapa activa",
   "dpi.stageDpi": "DPI de la etapa {n}",
   "dpi.stageDpiY": "DPI Y de la etapa {n}",
+  "dpi.axisX": "X",
+  "dpi.axisY": "Y",
   "dpi.color": "Color",
   "dpi.stageColor": "Color de la etapa {n}",
   "dpi.stageNoteCount": "Preajustes y Personalizado editan la etapa resaltada. {min}–{max} DPI. El botón de DPI del mouse recorre estas etapas.",

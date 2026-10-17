@@ -328,6 +328,8 @@ const en = {
   "dpi.makeActive": "Make this the active stage",
   "dpi.stageDpi": "Stage {n} DPI",
   "dpi.stageDpiY": "Stage {n} Y DPI",
+  "dpi.axisX": "X",
+  "dpi.axisY": "Y",
   "dpi.color": "Color",
   "dpi.stageColor": "Stage {n} color",
   "dpi.stageNoteCount": "Presets and Custom edit the highlighted stage. {min}–{max} DPI. The DPI button on the mouse cycles through these stages.",

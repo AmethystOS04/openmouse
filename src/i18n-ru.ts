@@ -323,6 +323,8 @@ export const ru: Record<I18nKey, string> = {
   "dpi.makeActive": "Сделать активной ступенью",
   "dpi.stageDpi": "DPI ступени {n}",
   "dpi.stageDpiY": "Ступень {n}: DPI по Y",
+  "dpi.axisX": "X",
+  "dpi.axisY": "Y",
   "dpi.color": "Цвет",
   "dpi.stageColor": "Цвет ступени {n}",
   "dpi.stageNoteCount": "Пресеты и «Своё» меняют подсвеченную ступень. {min}–{max} DPI. Кнопка DPI на мыши переключает эти ступени по кругу.",

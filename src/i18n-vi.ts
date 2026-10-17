@@ -274,6 +274,8 @@ export const vi: Record<I18nKey, string> = {
   "dpi.makeActive": "Đặt làm stage đang hoạt động",
   "dpi.stageDpi": "DPI stage {n}",
   "dpi.stageDpiY": "DPI Y stage {n}",
+  "dpi.axisX": "Trục X",
+  "dpi.axisY": "Trục Y",
   "dpi.color": "Màu",
   "dpi.stageColor": "Màu stage {n}",
   "dpi.stageNoteCount": "Presets và Tùy chỉnh sẽ chỉnh stage đang được tô sáng. {min}–{max} DPI. Nút DPI trên chuột sẽ chuyển lần lượt qua các stage này.",

@@ -324,6 +324,8 @@ export const ja: Record<I18nKey, string> = {
   "dpi.makeActive": "このステージを現在のステージにする",
   "dpi.stageDpi": "ステージ{n}のDPI",
   "dpi.stageDpiY": "ステージ{n}のY軸DPI",
+  "dpi.axisX": "X軸",
+  "dpi.axisY": "Y軸",
   "dpi.color": "カラー",
   "dpi.stageColor": "ステージ{n}のカラー",
   "dpi.stageNoteCount": "プリセットとカスタムはハイライトされたステージを編集します。{min}〜{max} DPI。マウスのDPIボタンでこれらのステージを切り替えます。",

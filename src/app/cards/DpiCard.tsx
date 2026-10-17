@@ -369,6 +369,12 @@ function DpiStageEditor({
         <span className="dpi-editor-bar-count">{enabledCount} / {rows.length}</span>
       </div>
       <div className="dpi-slot-rule" />
+      {stageAxesEditable ? (
+        <div className="dpi-editor-axes-head" aria-hidden="true">
+          <span>{t(locale, "dpi.axisX")}</span>
+          <span>{t(locale, "dpi.axisY")}</span>
+        </div>
+      ) : null}
       <div id="dpi-editor-list" className="dpi-editor-list">
         {rows.map((row, index) => {
           const slider = sliderFor(row);
