@@ -764,6 +764,19 @@ function clientHasMethod(method: string): boolean {
   return typeof client?.[method] === "function";
 }
 
+/**
+ * Clients that take a plain DPI per stage. Their table is the numeric
+ * `status.dpiStages` list, which is what gates the stage editor in the first
+ * place. The SteelSeries Gen 2 families (Aerox 3 Wireless Gen 2, Rival 3 Gen 2,
+ * Rival 3 Wireless Gen 2) instead take an X/Y/lift-off preset and publish no
+ * stage table at all, so they can never reach the write below. Deriving the
+ * contract from the protocol union keeps it honest: a client that changes shape
+ * becomes a type error here rather than a mis-typed write.
+ */
+type NumericDpiStageClient = Extract<SupportedClient, {
+  setDpiStageValue: (stage: number, dpi: number) => Promise<unknown>;
+}>;
+
 type KsnakeMacroClient = {
   setMacros(profiles: readonly KsnakeMacroProfile[]): Promise<void>;
 };
@@ -3969,7 +3982,8 @@ export function applyDpiStageValue(stage: number, rawDpi: number): void {
       if ((status.activeDpiStage ?? 0) === stage) status.dpi = dpi;
     },
     apply: async () => {
-      await requireClientMethod("setDpiStageValue", "DPI stage value").setDpiStageValue(stage, dpi);
+      const client = requireClientMethod("setDpiStageValue", "DPI stage value") as NumericDpiStageClient;
+      await client.setDpiStageValue(stage, dpi);
     },
   });
 }
