@@ -765,6 +765,17 @@ function clientHasMethod(method: string): boolean {
 }
 
 /**
+ * The per-stage axes setter this client exposes, if any. Both take
+ * `(stage, x, y)`: Lamzu Luna's is per-model (`setLunaFuryDpiStageAxes`), the
+ * generic name is what the SteelSeries Gen 2 families use.
+ */
+function dpiStageAxesWriterName(): string | null {
+  if (clientHasMethod("setDpiStageAxes")) return "setDpiStageAxes";
+  if (clientHasMethod("setLunaFuryDpiStageAxes")) return "setLunaFuryDpiStageAxes";
+  return null;
+}
+
+/**
  * Clients that take a plain DPI per stage. Their table is the numeric
  * `status.dpiStages` list, which is what gates the stage editor in the first
  * place. The SteelSeries Gen 2 families (Aerox 3 Wireless Gen 2, Rival 3 Gen 2,
@@ -1357,6 +1368,11 @@ function readCapabilities(): DeviceCapabilities {
     // active stage, not the table.
     dpiStagesWritable: clientHasMethod("setDpiStageValue"),
     activeDpiStageWritable: clientHasMethod("setActiveDpiStage"),
+    // Only a per-stage axes write can change one axis and keep the other: the
+    // numeric `setDpiStageValue` mirrors X into Y everywhere it appears. Lamzu
+    // Luna spells it `setLunaFuryDpiStageAxes`, the SteelSeries Gen 2 families
+    // take the generic name.
+    dpiStageAxesWritable: dpiStageAxesWriterName() !== null,
     // Any client may publish these; the two named drivers are just the ones
     // that predate the generic lookup below.
     sleepOptions: dm
@@ -3958,6 +3974,12 @@ export function applyActiveDpiStage(stage: number): void {
 
 export function applyDpiStageValue(stage: number, rawDpi: number): void {
   if (!hasActiveClient()) return;
+  // A client that can address the axes separately must not take the numeric
+  // route: that one mirrors X into Y and would discard the stage's Y.
+  if (dpiStageAxesWriterName() !== null) {
+    applyDpiStageAxes(stage, { x: rawDpi });
+    return;
+  }
   const stagedStatus = latestDeviceStatus ? withPendingChanges(latestDeviceStatus) : null;
   const stages = stagedStatus?.dpiStages ?? latestDeviceStatus?.dpiStages;
   if (!stages || !Number.isInteger(stage) || stage < 0 || stage >= stages.length) return;
@@ -3984,6 +4006,78 @@ export function applyDpiStageValue(stage: number, rawDpi: number): void {
     apply: async () => {
       const client = requireClientMethod("setDpiStageValue", "DPI stage value") as NumericDpiStageClient;
       await client.setDpiStageValue(stage, dpi);
+    },
+  });
+}
+
+/**
+ * Write one or both axes of a single DPI stage on a client that stores them
+ * independently. The untouched axis is filled in from the stage's current
+ * value, so a Y edit cannot silently move X.
+ */
+export function applyDpiStageAxes(stage: number, edit: { x?: number; y?: number }): void {
+  if (!hasActiveClient()) return;
+  const writer = dpiStageAxesWriterName();
+  if (writer === null) return;
+  const stagedStatus = latestDeviceStatus ? withPendingChanges(latestDeviceStatus) : null;
+  const stages = stagedStatus?.dpiStages ?? latestDeviceStatus?.dpiStages;
+  if (!stages || !Number.isInteger(stage) || stage < 0 || stage >= stages.length) return;
+  const snap = (rawDpi: number): number | null => {
+    const dpi = closestDpiOption(dpiOptions, rawDpi) ?? rawDpi;
+    return dpiOptions.includes(dpi) ? dpi : null;
+  };
+  const x = edit.x === undefined ? null : snap(edit.x);
+  const y = edit.y === undefined ? null : snap(edit.y);
+  if ((edit.x !== undefined && x === null) || (edit.y !== undefined && y === null)) {
+    setReadStatus(st("ctl.dpiNotSupported", { dpi: (edit.x ?? edit.y ?? 0).toLocaleString() }));
+    emit();
+    return;
+  }
+  const currentY = (stagedStatus?.dpiStagesY ?? latestDeviceStatus?.dpiStagesY)?.[stage] ?? stages[stage];
+  const nextX = x ?? stages[stage];
+  const nextY = y ?? currentY;
+  // The change writes the resolved pair, so describe the pair — not just the
+  // axis this edit moved. Two edits to one stage collapse onto the same key,
+  // and the label of the second one must not hide the first one's write.
+  const deviceY = latestDeviceStatus?.dpiStagesY;
+  const described = [
+    nextX !== latestDeviceStatus?.dpiStages?.[stage] ? `X ${nextX.toLocaleString()}` : null,
+    deviceY !== undefined && nextY !== deviceY[stage] ? `Y ${nextY.toLocaleString()}` : null,
+  ].filter((axis): axis is string => axis !== null);
+  const axes = (described.length > 0 ? described : [
+    x === null ? null : `X ${x.toLocaleString()}`,
+    y === null ? null : `Y ${y.toLocaleString()}`,
+  ].filter((axis): axis is string => axis !== null)).join(" · ");
+  stageChange({
+    key: `dpi-stage-${stage}`,
+    label: `Stage ${stage + 1} · ${axes} DPI`,
+    command: `Set DPI stage ${stage + 1} to ${axes} DPI`,
+    progress: `Setting stage ${stage + 1} to ${axes} DPI…`,
+    preview: (status) => {
+      // Preview the resolved pair rather than only the axis this edit moved: a
+      // later edit to the same stage replaces this change, and `matchesDeviceStatus`
+      // and the editor's own row comparison both read this preview. A preview
+      // that dropped the carried axis would make the editor re-issue it as a
+      // fresh change on its next commit and misstate what is about to be written.
+      const axesPresent = Array.isArray(status.dpiStagesY);
+      const next = status.dpiStages?.slice() ?? [];
+      while (next.length <= stage) next.push(next.at(-1) ?? status.dpi);
+      next[stage] = nextX;
+      status.dpiStages = next;
+      if (axesPresent) {
+        const nextY2 = status.dpiStagesY!.slice();
+        while (nextY2.length <= stage) nextY2.push(nextY2.at(-1) ?? status.dpiY ?? status.dpi);
+        nextY2[stage] = nextY;
+        status.dpiStagesY = nextY2;
+      }
+      if ((status.activeDpiStage ?? 0) === stage) {
+        status.dpi = nextX;
+        if (axesPresent) status.dpiY = nextY;
+      }
+    },
+    apply: async () => {
+      const client = requireSettingsClient() as unknown as Record<string, ((stage: number, x: number, y: number) => Promise<unknown>) | undefined>;
+      await client[writer]!(stage, nextX, nextY);
     },
   });
 }
@@ -6644,6 +6738,55 @@ function previewClient(): LogitechHidppClient {
   });
 }
 
+/**
+ * A stand-in that keeps the five DPI presets in memory, so the preview behaves
+ * like a connected Gen 2 mouse: the axes column writes through to it and the
+ * status that comes back shows the result.
+ */
+function steelseriesStagePreviewClient(initial: MouseStatus): SupportedClient {
+  const status = structuredClone(initial);
+  const stages = (): number[] => status.dpiStages ?? [];
+  const stagesY = (): number[] => status.dpiStagesY ?? [];
+  const write = (stage: number, x: number | null, y: number | null): void => {
+    if (x !== null) stages()[stage] = x;
+    if (y !== null) stagesY()[stage] = y;
+    if ((status.activeDpiStage ?? 0) === stage) {
+      status.dpi = stages()[stage] ?? status.dpi;
+      status.dpiY = stagesY()[stage] ?? status.dpiY;
+    }
+  };
+  const client = {
+    device: {} as HIDDevice,
+    pollIntervalMs: 0,
+    open: async () => undefined,
+    close: async () => undefined,
+    readStatus: async () => structuredClone(status),
+    setDpi: async (dpi: number) => {
+      write(status.activeDpiStage ?? 0, dpi, dpi);
+      return dpi;
+    },
+    setDpiStageValue: async (stage: number, dpi: number) => {
+      write(stage, dpi, dpi);
+      return dpi;
+    },
+    setDpiStageAxes: async (stage: number, x: number, y: number) => {
+      write(stage, x, y);
+      return { x, y };
+    },
+    setActiveDpiStage: async (stage: number) => {
+      status.activeDpiStage = stage;
+      status.dpi = stages()[stage] ?? status.dpi;
+      status.dpiY = stagesY()[stage] ?? status.dpiY;
+      return stage;
+    },
+    setPollingRate: async (hz: number) => {
+      status.pollingRateHz = hz;
+      return hz;
+    },
+  };
+  return client as unknown as SupportedClient;
+}
+
 function showSlotsPreview(): void {
   dpiOptions = [100, 200, 400, 800, 1600, 3200, 6400, 8000, 16000, 32000];
   const stages = [
@@ -6802,6 +6945,7 @@ async function showFixturePreview(name: PreviewMode): Promise<void> {
   }
   dpiOptions = [100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600, 32000];
   if (name === "g703") showG703PreviewProfiles();
+  if (name === "steelseries-gen2") active = steelseriesStagePreviewClient(fixture.status);
   // Populate brand capabilities so preview cards that gate on capabilities still render.
   capabilities = readCapabilities();
   if (name === "finalmouse" || name === "finalmouse-slx") active = finalmousePreviewClient(fixture.status);
