@@ -4036,28 +4036,43 @@ export function applyDpiStageAxes(stage: number, edit: { x?: number; y?: number 
   const currentY = (stagedStatus?.dpiStagesY ?? latestDeviceStatus?.dpiStagesY)?.[stage] ?? stages[stage];
   const nextX = x ?? stages[stage];
   const nextY = y ?? currentY;
-  const axes = [x === null ? null : `X ${x.toLocaleString()}`, y === null ? null : `Y ${y.toLocaleString()}`]
-    .filter((axis): axis is string => axis !== null)
-    .join(" · ");
+  // The change writes the resolved pair, so describe the pair — not just the
+  // axis this edit moved. Two edits to one stage collapse onto the same key,
+  // and the label of the second one must not hide the first one's write.
+  const deviceY = latestDeviceStatus?.dpiStagesY;
+  const described = [
+    nextX !== latestDeviceStatus?.dpiStages?.[stage] ? `X ${nextX.toLocaleString()}` : null,
+    deviceY !== undefined && nextY !== deviceY[stage] ? `Y ${nextY.toLocaleString()}` : null,
+  ].filter((axis): axis is string => axis !== null);
+  const axes = (described.length > 0 ? described : [
+    x === null ? null : `X ${x.toLocaleString()}`,
+    y === null ? null : `Y ${y.toLocaleString()}`,
+  ].filter((axis): axis is string => axis !== null)).join(" · ");
   stageChange({
     key: `dpi-stage-${stage}`,
     label: `Stage ${stage + 1} · ${axes} DPI`,
     command: `Set DPI stage ${stage + 1} to ${axes} DPI`,
     progress: `Setting stage ${stage + 1} to ${axes} DPI…`,
     preview: (status) => {
-      if (x !== null) {
-        const next = status.dpiStages?.slice() ?? [];
-        while (next.length <= stage) next.push(next.at(-1) ?? status.dpi);
-        next[stage] = x;
-        status.dpiStages = next;
-        if ((status.activeDpiStage ?? 0) === stage) status.dpi = x;
-      }
-      if (y !== null) {
-        const nextY2 = status.dpiStagesY?.slice() ?? [];
+      // Preview the resolved pair rather than only the axis this edit moved: a
+      // later edit to the same stage replaces this change, and `matchesDeviceStatus`
+      // and the editor's own row comparison both read this preview. A preview
+      // that dropped the carried axis would make the editor re-issue it as a
+      // fresh change on its next commit and misstate what is about to be written.
+      const axesPresent = Array.isArray(status.dpiStagesY);
+      const next = status.dpiStages?.slice() ?? [];
+      while (next.length <= stage) next.push(next.at(-1) ?? status.dpi);
+      next[stage] = nextX;
+      status.dpiStages = next;
+      if (axesPresent) {
+        const nextY2 = status.dpiStagesY!.slice();
         while (nextY2.length <= stage) nextY2.push(nextY2.at(-1) ?? status.dpiY ?? status.dpi);
-        nextY2[stage] = y;
+        nextY2[stage] = nextY;
         status.dpiStagesY = nextY2;
-        if ((status.activeDpiStage ?? 0) === stage) status.dpiY = y;
+      }
+      if ((status.activeDpiStage ?? 0) === stage) {
+        status.dpi = nextX;
+        if (axesPresent) status.dpiY = nextY;
       }
     },
     apply: async () => {
