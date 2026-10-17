@@ -229,7 +229,13 @@ const BUDGET_BYTES: Record<string, number> = {
   // measured aggregate from 2,629.5 kB to 2,632.2 kB — over the old budget by
   // 2.2 kB, which itself had only 545 bytes of headroom, so any new localized
   // string would have tripped it.
-  ".js": 2_640_000,
+  // Raised to 2,720 kB for the @openmouse/protocol 0.43.0 bump: eleven
+  // SteelSeries drivers arrive through the shared registry (the Aerox 3
+  // Wireless Gen 2, Rival 3 Gen 2, and Rival 3 Wireless Gen 2 preset families
+  // plus the Rival 100/110/300/5/600, Sensei 310/Raw/Rival Pro, and Prime Mini
+  // codecs). The measured aggregate is 2,711.6 kB, 71.6 kB over the old
+  // 2,640 kB budget, leaving ~8.4 kB of headroom.
+  ".js": 2_720_000,
 };
 
 const ASSETS = join("dist", "assets");
