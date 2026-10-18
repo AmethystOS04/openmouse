@@ -11,11 +11,12 @@ import { isNoirE1Status, isNoirKsnakeStatus, isNoirS1Status, NOIR_DPI_STAGE_COLO
 import { closestDpiOption, dpiPresetValues } from "../../../device/dpi-presets";
 import { t, tp } from "../../../i18n/index";
 import { LiftOffDistance, hasLiftOff } from "./PerformanceCards";
+import { IconLinked, IconUnlinked } from "../../../shared/icons";
 
 const MAX_EDITOR_ROWS = 4;
 const DEFAULT_LOD = 2;
 
-type StageRow = { enabled: boolean; value: string; valueY: string; lod: number };
+type StageRow = { enabled: boolean; value: string; valueY: string; lod: number; linked?: boolean };
 
 function isUniform(stages: readonly number[] | undefined): boolean {
   return stages !== undefined && stages.length > 1 && stages.every((value) => value === stages[0]);
@@ -61,6 +62,8 @@ function DpiStageEditor({
   const stageAxesEditable = mode === "stage"
     && snapshot.capabilities?.dpiStageAxesWritable === true
     && Array.isArray(status?.dpiStagesY);
+  const slotAxesEditable = mode === "logitech" && status?.supportsSeparateDpiAxes === true;
+  const showAxes = stageAxesEditable || slotAxesEditable;
   const stageColors = mode === "stage"
     ? status?.dpiStageColors ?? (isNoirKsnakeStatus(status) ? NOIR_DPI_STAGE_COLORS : null)
     : null;
@@ -74,12 +77,12 @@ function DpiStageEditor({
   const countCap = isLogitech ? (limits?.maxStages ?? 1) : stageEditor?.maxStages ?? 1;
   const rowCap = mode === "generic" ? MAX_EDITOR_ROWS : countCap;
 
-  const initRows = (): StageRow[] => {
+  const initRows = (prev?: StageRow[]): StageRow[] => {
     if (mode === "logitech" && snapshot.dpiSlotPlan) {
       const stages = snapshot.dpiSlotPlan.stages.slice(0, rowCap);
       const last = stages[stages.length - 1]?.x ?? status?.dpi ?? 800;
-      const rows = stages.map((stage) => ({ enabled: true, value: String(stage.x), valueY: String(stage.y ?? stage.x), lod: stage.lod }));
-      while (rows.length < rowCap) rows.push({ enabled: false, value: String(last), valueY: String(last), lod: DEFAULT_LOD });
+      const rows = stages.map((stage, index) => ({ enabled: true, value: String(stage.x), valueY: String(stage.y ?? stage.x), lod: stage.lod, linked: (stage.y ?? stage.x) === stage.x && prev?.[index]?.linked !== false }));
+      while (rows.length < rowCap) rows.push({ enabled: false, value: String(last), valueY: String(last), lod: DEFAULT_LOD, linked: true });
       return rows;
     }
     if (mode === "stage" && status?.dpiStages) {
@@ -149,7 +152,7 @@ function DpiStageEditor({
   // Rebuild local rows only when the device source clearly changes while the
   // user is not mid-edit; disabled-but-kept rows are local and must survive.
   const sourceSig = mode === "logitech"
-    ? (snapshot.dpiSlotPlan?.stages.map((stage) => stage.x).join(",") ?? "-")
+    ? (snapshot.dpiSlotPlan?.stages.map((stage) => `${stage.x}/${stage.y}`).join(",") ?? "-")
     : mode === "stage"
       ? `${status?.dpiStages?.join(",") ?? "-"}|${status?.dpiStagesY?.join(",") ?? "-"}`
       : String(status?.dpi ?? 0);
@@ -157,7 +160,7 @@ function DpiStageEditor({
   useEffect(() => {
     if (sourceSig === lastSigRef.current) return;
     lastSigRef.current = sourceSig;
-    if (Date.now() - touchedRef.current > 1500) setRows(initRows());
+    if (Date.now() - touchedRef.current > 1500 || (mode === "logitech" && !timerRef.current)) setRows(initRows(rowsRef.current));
     // initRows is recreated each render on purpose so it always reads fresh snapshot data.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceSig]);
@@ -193,6 +196,7 @@ function DpiStageEditor({
           return {
             enabled: row.enabled,
             value: parseRow(row.value) ?? (limits?.minDpi ?? 100),
+            valueY: slotAxesEditable ? parseRow(row.valueY) ?? undefined : undefined,
             lod: planLods[position] ?? row.lod,
           };
         }),
@@ -235,11 +239,21 @@ function DpiStageEditor({
     }
   };
 
-  const markEdited = (next: StageRow[]): void => {
+  const markEdited = (next: StageRow[], delay = 450): void => {
     touchedRef.current = Date.now();
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => commit(rowsRef.current), 450);
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      commit(rowsRef.current);
+    }, delay);
     void next;
+  };
+
+  const flushEdit = (): void => {
+    if (!timerRef.current) return;
+    clearTimeout(timerRef.current);
+    timerRef.current = null;
+    commit(rowsRef.current);
   };
 
   const setEnabled = (index: number, enabled: boolean): void => {
@@ -273,18 +287,48 @@ function DpiStageEditor({
     markEdited(next);
   };
 
-  const setValue = (index: number, raw: string): void => {
-    const next = rows.map((row, i) => (i === index ? { ...row, value: raw.replace(/[^\d]/g, "") } : row));
+  const TYPING_DELAY = 1200;
+
+  const setValue = (index: number, raw: string, delay?: number): void => {
+    const value = raw.replace(/[^\d]/g, "");
+    const next = rows.map((row, i) => (i === index
+      ? { ...row, value, valueY: slotAxesEditable && row.linked !== false ? value : row.valueY }
+      : row));
+    setRows(next);
+    rowsRef.current = next;
+    markEdited(next, delay);
+  };
+
+  const inputEdit = (event: Event, oldRaw: string): { raw: string; delay?: number } => {
+    const raw = (event.currentTarget as HTMLInputElement).value;
+    const type = (event as InputEvent).inputType;
+    if (type && type !== "insertReplacementText") return { raw, delay: TYPING_DELAY };
+    const old = parseRow(oldRaw);
+    const wanted = Number(raw);
+    if (mode !== "logitech" || old === null || !Number.isFinite(wanted) || wanted === old) return { raw };
+    const sorted = [...options].sort((a, b) => a - b);
+    const neighbour = wanted > old
+      ? sorted.find((option) => option > old)
+      : [...sorted].reverse().find((option) => option < old);
+    return { raw: String(neighbour ?? wanted) };
+  };
+
+  const toggleLink = (index: number): void => {
+    const next = rows.map((row, i) => {
+      if (i !== index) return row;
+      const linked = row.linked === false;
+      return { ...row, linked, valueY: linked ? row.value : row.valueY };
+    });
     setRows(next);
     rowsRef.current = next;
     markEdited(next);
   };
 
-  const setValueY = (index: number, raw: string): void => {
+  const setValueY = (index: number, raw: string, delay?: number): void => {
     const next = rows.map((row, i) => (i === index ? { ...row, valueY: raw.replace(/[^\d]/g, "") } : row));
     setRows(next);
     rowsRef.current = next;
-    markEdited(next);
+    markEdited(next, delay);
   };
 
   const setSlider = (index: number, numeric: number): void => setValue(index, String(numeric));
@@ -350,7 +394,7 @@ function DpiStageEditor({
   const enabledCount = rows.filter((row) => row.enabled).length;
 
   return (
-    <div id="dpi-stage-editor" className={`dpi-editor mode-${mode}${showStageColors ? " has-m2nex-stage-colors" : ""}${stageAxesEditable ? " has-stage-axes" : ""}`}>
+    <div id="dpi-stage-editor" className={`dpi-editor mode-${mode}${slotAxesEditable ? " has-slot-axes" : ""}${showStageColors ? " has-m2nex-stage-colors" : ""}${showAxes ? " has-stage-axes" : ""}`}>
       <div className="dpi-editor-bar">
         <span className="dpi-editor-bar-label">
           {t(locale, mode === "logitech" ? "dpi.slotsInUse" : mode === "stage" ? "dpi.stagesInUse" : "dpi.presetsInUse")}
@@ -358,7 +402,7 @@ function DpiStageEditor({
         <span className="dpi-editor-bar-count">{enabledCount} / {rows.length}</span>
       </div>
       <div className="dpi-slot-rule" />
-      {stageAxesEditable ? (
+      {showAxes ? (
         <div className="dpi-editor-axes-head" aria-hidden="true">
           <span>{t(locale, "dpi.axisX")}</span>
           <span>{t(locale, "dpi.axisY")}</span>
@@ -411,19 +455,42 @@ function DpiStageEditor({
                 step={slider.step}
                 value={row.value}
                 disabled={locked || (mode === "stage" && !stagesWritable)}
-                onChange={(event) => setValue(index, event.currentTarget.value)}
+                onChange={(event) => {
+                  const edit = inputEdit(event, row.value);
+                  setValue(index, edit.raw, edit.delay);
+                }}
+                onBlur={flushEdit}
+                onKeyDown={(event) => { if (event.key === "Enter") flushEdit(); }}
               />
-              {stageAxesEditable ? (
+              {slotAxesEditable ? (
+                <button
+                  type="button"
+                  className={`dpi-axis-lock${row.linked === false ? "" : " is-linked"}`}
+                  disabled={locked || !row.enabled}
+                  title={row.linked === false ? t(locale, "dpi.unlinkedHint") : t(locale, "dpi.linkedHint")}
+                  aria-label={tp(locale, "dpi.linkXY", { n: index + 1 })}
+                  aria-pressed={row.linked !== false}
+                  onClick={() => toggleLink(index)}
+                >
+                  {row.linked === false ? <IconUnlinked /> : <IconLinked />}
+                </button>
+              ) : null}
+              {showAxes ? (
                 <input
                   type="number"
-                  className="dpi-editor-value"
+                  className="dpi-editor-value dpi-editor-value-y"
                   aria-label={tp(locale, "dpi.stageDpiY", { n: index + 1 })}
                   min={slider.min}
                   max={slider.max}
                   step={slider.step}
                   value={row.valueY}
-                  disabled={locked || !stagesWritable}
-                  onChange={(event) => setValueY(index, event.currentTarget.value)}
+                  disabled={locked || (mode === "stage" && !stagesWritable) || (slotAxesEditable && row.linked !== false)}
+                  onChange={(event) => {
+                    const edit = inputEdit(event, row.valueY);
+                    setValueY(index, edit.raw, edit.delay);
+                  }}
+                  onBlur={flushEdit}
+                  onKeyDown={(event) => { if (event.key === "Enter") flushEdit(); }}
                 />
               ) : null}
               <input

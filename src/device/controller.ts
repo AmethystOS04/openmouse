@@ -4449,8 +4449,7 @@ async function writeStagedProfileSector(): Promise<void> {
       .filter((edit): edit is Extract<StagedProfileButtonEdit, { kind: "macro" }> => edit.kind === "macro")
       .map(({ layer, button, steps }) => ({ layer, button, steps })),
   });
-  onboardProfiles = null;
-  await reloadOnboardProfiles();
+  if (!await reloadOnboardProfiles()) onboardProfiles = null;
 }
 
 export function editedProfileEntry(): OnboardProfile | null {
@@ -4558,12 +4557,24 @@ export function setDpiSlotCount(count: number): void {
   stageDpiSlots();
 }
 
+function snapSlotDpi(value: number, limits: Parameters<typeof clampDpi>[1]): number {
+  if (dpiOptions.length === 0 || !Number.isFinite(value)) return clampDpi(value, limits);
+  const target = Math.min(limits.maxDpi, Math.max(limits.minDpi, value));
+  let best = dpiOptions[0];
+  for (const option of dpiOptions) {
+    const gap = Math.abs(option - target);
+    const bestGap = Math.abs(best - target);
+    if (gap < bestGap || (gap === bestGap && option > best)) best = option;
+  }
+  return best;
+}
+
 export function setDpiSlotAxis(index: number, axis: "x" | "y", value: number): void {
   if (blockedByGameProfileDraft()) return;
   const limits = dpiSlotLimits();
   const stage = dpiSlotPlan?.stages[index];
   if (!stage || !limits || dpiSlotsLocked()) return;
-  const dpi = clampDpi(value, limits);
+  const dpi = snapSlotDpi(value, limits);
   stage[axis] = dpi;
   if (dpiAxisLockedAt(index)) stage[axis === "x" ? "y" : "x"] = dpi;
   stageDpiSlots();
@@ -4589,23 +4600,26 @@ export function setDpiSlotDefault(index: number): void {
   stageDpiSlots();
 }
 
-export function applyDpiSlotEditor(rows: { enabled: boolean; value: number; lod: number }[]): void {
+export function applyDpiSlotEditor(rows: { enabled: boolean; value: number; valueY?: number; lod: number }[]): void {
   if (blockedByGameProfileDraft()) return;
   const limits = dpiSlotLimits();
   if (!dpiSlotPlan || !limits || dpiSlotsLocked()) return;
   const enabled = rows.filter((row) => row.enabled && row.value > 0);
   if (enabled.length === 0) return;
   const previous = dpiSlotPlan.stages;
-  const oldDefault = previous[dpiSlotPlan.defaultIndex]?.x;
+  const oldDefaultIndex = dpiSlotPlan.defaultIndex;
+  const oldDefault = previous[oldDefaultIndex];
   const stages = enabled.slice(0, limits.maxStages).map((row) => ({
-    x: clampDpi(row.value, limits),
-    y: clampDpi(row.value, limits),
+    x: snapSlotDpi(row.value, limits),
+    y: snapSlotDpi(row.valueY ?? row.value, limits),
     lod: Number.isFinite(row.lod) && row.lod >= 0 ? Math.round(row.lod) : 2,
   }));
-  const matchedDefault = stages.findIndex((stage) => stage.x === oldDefault);
+  const matchedDefault = stages.length === previous.length
+    ? oldDefaultIndex
+    : stages.findIndex((stage) => stage.x === oldDefault?.x && stage.y === oldDefault?.y);
   dpiSlotPlan = {
     stages,
-    defaultIndex: matchedDefault === -1 ? 0 : matchedDefault,
+    defaultIndex: matchedDefault < 0 || matchedDefault >= stages.length ? 0 : matchedDefault,
   };
   stageDpiSlots();
 }
@@ -4682,17 +4696,19 @@ export function describeProfileEntry(entry: OnboardProfile | null): { name: stri
   };
 }
 
-export async function reloadOnboardProfiles(): Promise<void> {
+export async function reloadOnboardProfiles(): Promise<boolean> {
   const client = logitechClient();
-  if (!client || onboardProfilesLoading) return;
+  if (!client || onboardProfilesLoading) return false;
   onboardProfilesLoading = true;
   setOnboardStatus(st("ctl.readingProfiles"));
   try {
     onboardProfiles = await client.readOnboardProfiles();
     syncProfileDerivedState();
+    return true;
   } catch (error) {
     recordDiagnosticError(error, st("ctl.unableProfiles"));
     setOnboardStatus(error instanceof Error ? error.message : "Unable to read onboard profiles.");
+    return false;
   } finally {
     onboardProfilesLoading = false;
   }
