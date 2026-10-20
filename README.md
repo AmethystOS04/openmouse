@@ -81,11 +81,8 @@ OpenMouse is supported by:
 
 <a href="https://macroscope.com/"><img src=".github/assets/sponsor-macroscope.png" width="360" alt="Sponsored by Macroscope"/></a>
 
-<p>
-  <a href="https://hypertune.gg/"><img src=".github/assets/sponsor-hypertune.svg" height="64" alt="Hypertune"/></a>
-  &nbsp;&nbsp;&nbsp;
-  <a href="https://hone.gg/"><img src=".github/assets/sponsor-hone.webp" height="64" alt="Hone"/></a>
-</p>
+<a href="https://hypertune.gg/"><img src=".github/assets/sponsor-hypertune.svg" width="176" alt="Sponsored by Hypertune"/></a>
+<a href="https://hone.gg/"><img src=".github/assets/sponsor-hone.svg" width="176" alt="Sponsored by Hone"/></a>
 
 ## Contributing
 
