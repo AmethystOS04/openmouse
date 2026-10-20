@@ -77,13 +77,7 @@ hang out on Discord.
 
 ## Sponsors
 
-OpenMouse is supported by:
-
-<a href="https://macroscope.com/"><img src=".github/assets/sponsor-macroscope.png" width="360" alt="Sponsored by Macroscope"/></a>
-
-<a href="https://hypertune.gg/"><img src=".github/assets/sponsor-hypertune-badge.svg" width="360" alt="Sponsored by Hypertune"/></a>
-
-<a href="https://hone.gg/"><img src=".github/assets/sponsor-hone-badge.svg" width="360" alt="Sponsored by Hone"/></a>
+OpenMouse is supported by [Macroscope](https://macroscope.com/), [Hypertune](https://hypertune.gg/), and [Hone](https://hone.gg/).
 
 ## Contributing
 

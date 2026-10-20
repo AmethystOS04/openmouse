@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="360" height="89" viewBox="0 0 360 89" role="img" aria-label="Sponsored by Hypertune">
-  <defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#05052b"/><stop offset=".6" stop-color="#3a1d44"/><stop offset="1" stop-color="#4b6a86"/></linearGradient></defs>
-  <rect x=".5" y=".5" width="359" height="88" rx="44" fill="url(#g)" stroke="#3a3d6b"/>
-  <circle cx="45" cy="44.5" r="31" fill="#fff"/>
-  <svg x="29" y="28.5" width="32" height="32" viewBox="0 0 2000 2000"><path d="M1410.2 122L1847 222.286V1768.36L1410.2 1877V1137.39H590.8V1877L154 1768.36V222.286L590.8 122V1059.67L788.476 826.507H1410.2V122Z" fill="#E1251B"/></svg>
-  <rect x="94" y="22" width="2" height="45" rx="1" fill="#fff" opacity=".25"/>
-  <text x="118" y="39" fill="#c0d4ff" style="font:400 15px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">Sponsored by</text>
-  <text x="118" y="66" fill="#fff" style="font:700 30px -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">Hypertune</text>
-</svg>
