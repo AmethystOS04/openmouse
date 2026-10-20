@@ -75,6 +75,12 @@ hang out on Discord.
 
 <a href="https://discord.gg/yxC9jzMdw6"><img src="https://control.openmouse.app/api/discord-card" width="520" alt="Join OpenMouse on Discord"/></a>
 
+## Sponsors
+
+OpenMouse is supported by:
+
+<a href="https://macroscope.com/"><img src=".github/assets/sponsor-macroscope.png" width="360" alt="Sponsored by Macroscope"/></a>
+
 ## Contributing
 
 OpenMouse is one repository in a family — with the **Desktop** app,
