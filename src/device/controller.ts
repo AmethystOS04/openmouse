@@ -253,9 +253,10 @@ export const PULSAR_SLEEP_OPTIONS: ReadonlyArray<readonly [number, string]> = [
 const BACKGROUND = "Background refresh";
 const FLASH_STEP_DELAY_MS = 420;
 const FLASH_SETTLE_MS = 320;
-// Longest a flash waits for an in-flight device refresh before giving up
-// instead of busy-waiting forever.
-const REFRESH_WAIT_TIMEOUT_MS = 2000;
+// Longest a flash waits for an in-flight device read before giving up
+// instead of busy-waiting forever. A full onboard-profile reread over a
+// wireless link can take a few seconds.
+const REFRESH_WAIT_TIMEOUT_MS = 5000;
 
 const previewModeEnabled = previewsEnabled(__BUILD_CHANNEL__, import.meta.env.DEV);
 const previewMode = previewModeEnabled
@@ -2192,13 +2193,17 @@ export async function flashPendingChanges(): Promise<void> {
   emit();
   let written = 0;
   let failure: string | null = null;
-  if (refreshInProgress) {
+  // HID++ replies are matched by feature and function only, so a profile read
+  // still running in the background would take the write's sector reads and
+  // fail its checksum check. Let every read finish first.
+  const reading = (): boolean => refreshInProgress || onboardProfilesLoading;
+  if (reading()) {
     pendingStatusText = st("ctl.waitRefresh");
     readStatus = pendingStatusText;
     emit();
     const refreshDeadline = Date.now() + REFRESH_WAIT_TIMEOUT_MS;
-    while (refreshInProgress && Date.now() <= refreshDeadline) await wait(25);
-    if (refreshInProgress) {
+    while (reading() && Date.now() <= refreshDeadline) await wait(25);
+    if (reading()) {
       const timeout = new Error("Timed out waiting for the device refresh.");
       recordDiagnosticError(timeout, st("ctl.unableFlash"));
       failure = timeout.message;
@@ -2697,7 +2702,9 @@ function applyStatusInner(deviceStatus: MouseStatus, statusKey?: string): void {
   if (supportsOnboard) {
     lastDeviceMode = status.deviceMode;
     lastProfileFormat = status.onboardProfileFormat ?? null;
-    if (onboardProfiles === null && !onboardProfilesLoading) void reloadOnboardProfiles();
+    // A write rereads the profiles itself; starting a read here would interleave
+    // with its sector reads.
+    if (onboardProfiles === null && !onboardProfilesLoading && !settingInProgress) void reloadOnboardProfiles();
     else syncProfileDerivedState();
   }
   syncEditedNapeLayer(deviceStatus);
@@ -4694,6 +4701,12 @@ export function describeProfileEntry(entry: OnboardProfile | null): { name: stri
     name: `${entry.name ?? st("prof.profileName", { n: entry.sector })}${entry.isCurrent && lastDeviceMode !== "Host" ? ` · ${st("prof.active")}` : ""}`,
     detail: [dpi, rate, entry.enabled ? null : st("prof.disabledTag")].filter(Boolean).join(" · "),
   };
+}
+
+/** The reload button. Skipped mid-write, which rereads the profiles itself. */
+export function rereadOnboardProfiles(): void {
+  if (settingInProgress) return;
+  void reloadOnboardProfiles();
 }
 
 export async function reloadOnboardProfiles(): Promise<boolean> {

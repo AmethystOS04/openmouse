@@ -84,7 +84,7 @@ export function Profiles({
           type="button"
           aria-label={t(locale, "prof.reload")}
           title={t(locale, "prof.reload")}
-          onClick={() => void control.reloadOnboardProfiles()}
+          onClick={() => control.rereadOnboardProfiles()}
         >
           <IconRefresh />
         </button>
