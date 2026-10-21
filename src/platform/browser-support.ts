@@ -8,6 +8,7 @@ export interface BrowserEnvironment {
 export interface UnsupportedNotice {
   headline: string;
   detail: string;
+  offerBridge?: boolean;
 }
 
 export function unsupportedNotice(env: BrowserEnvironment): UnsupportedNotice | null {
@@ -22,6 +23,7 @@ export function unsupportedNotice(env: BrowserEnvironment): UnsupportedNotice | 
     return {
       headline: "Install Bridge, or use a Chromium browser.",
       detail: "This browser has no WebHID. OpenMouse Bridge gives it native access to your mouse; without it, use Chrome, Edge, or Helium.",
+      offerBridge: true,
     };
   }
   if (!env.secureContext) {
