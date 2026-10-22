@@ -358,6 +358,8 @@ const napeKeymaps = new Map<number, KeychronNapeLayerKeymap>();
 const stagedNapeAssignments = new Map<string, StagedNapeAssignment>();
 let keymapReadToken = 0;
 let onboardProfilesLoading = false;
+// A status applied mid-write skips the profile read; the write's end retries it.
+let onboardReloadDeferred = false;
 let lastDeviceMode: MouseStatus["deviceMode"] = "Unknown";
 let lastProfileFormat: MouseStatus["onboardProfileFormat"] = null;
 
@@ -2253,8 +2255,11 @@ export async function flashPendingChanges(): Promise<void> {
 
 function endDeviceWrite(): void {
   settingInProgress = false;
+  const retryProfiles = onboardReloadDeferred && onboardProfiles === null && !onboardProfilesLoading;
+  onboardReloadDeferred = false;
   syncProfileDerivedState();
   emit();
+  if (retryProfiles) void reloadOnboardProfiles();
 }
 
 function saveInterfacePreferences(): void {
@@ -2702,8 +2707,9 @@ function applyStatusInner(deviceStatus: MouseStatus, statusKey?: string): void {
   if (supportsOnboard) {
     lastDeviceMode = status.deviceMode;
     lastProfileFormat = status.onboardProfileFormat ?? null;
-    // A write rereads the profiles itself; starting a read here would interleave
-    // with its sector reads.
+    // A read started mid-write would interleave with the write's sector reads,
+    // so it waits for endDeviceWrite().
+    if (onboardProfiles === null && !onboardProfilesLoading && settingInProgress) onboardReloadDeferred = true;
     if (onboardProfiles === null && !onboardProfilesLoading && !settingInProgress) void reloadOnboardProfiles();
     else syncProfileDerivedState();
   }
