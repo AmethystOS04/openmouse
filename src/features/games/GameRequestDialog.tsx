@@ -1,4 +1,5 @@
 import { displayText } from "../../i18n/index";
+import { track } from "../../platform/analytics";
 import { useUiLocale } from "../../shared/ui-locale";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, Copy, Gamepad2 } from "lucide-react";
@@ -215,6 +216,7 @@ export function GameRequestDialog({ open, onClose, locale = "en", bridgeActive, 
         /* the cooldown is a courtesy; storage failures just skip it */
       }
       control.pushToast("success", t(locale, "gamereq.sent"), tp(locale, "gamereq.sentDetail", { name: trimmedName }));
+      track("game_request_submitted", { request_kind: kind });
       setName("");
       setPath("");
       onClose();

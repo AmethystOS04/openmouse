@@ -251,6 +251,8 @@ const en = {
   "set.writes": "WRITES",
   "set.instantFlash": "Instant flash",
   "set.instantFlashBody": "Write each change to the mouse as soon as you make it, instead of staging it for the flash bar.",
+  "set.analytics": "Share anonymous diagnostics",
+  "set.analyticsBody": "Send anonymous usage and device error reports so supported devices can be fixed faster. No IP address, serial number or personal data is sent.",
   "set.flashImmediately": "Flash immediately",
   "set.sections": "SECTIONS",
   "set.advancedEditors": "Advanced editors",

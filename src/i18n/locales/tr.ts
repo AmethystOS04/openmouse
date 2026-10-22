@@ -182,6 +182,8 @@ export const tr: Record<I18nKey, string> = {
   "set.writes": "CİHAZA YAZMA",
   "set.instantFlash": "Anında yazma",
   "set.instantFlashBody": "Değişiklikleri yazma çubuğunda bekletmek yerine, yaptığınız anda fareye yazın.",
+  "set.analytics": "Anonim tanılama verilerini paylaş",
+  "set.analyticsBody": "Desteklenen cihazları daha hızlı iyileştirmek için anonim kullanım ve cihaz hatası raporları gönderir. IP adresi, seri numarası veya kişisel veri gönderilmez.",
   "set.flashImmediately": "Hemen cihaza yaz",
   "set.sections": "BÖLÜMLER",
   "set.advancedEditors": "Gelişmiş düzenleyiciler",

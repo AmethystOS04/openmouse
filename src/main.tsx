@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
+import "./platform/analytics";
 import "./styles/index.css";
 import { App } from "./app/App";
 import { UnsupportedNotice } from "./app/UnsupportedNotice";

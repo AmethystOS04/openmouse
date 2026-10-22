@@ -1,4 +1,5 @@
 import { emptyKeyboardWorkspace } from "./keyboard-workspace.ts";
+import { track, deviceProps, scrubError } from "../platform/analytics";
 import type { KeyboardCommand } from "./keyboard-workspace.ts";
 import { cachedBatterySamples, estimateBatteryTime, estimateFromRatedLife, ratedBattery, recordBatterySample, type BatteryMode } from "../features/devices/battery-history";
 import { bridgeEmptyResultMessage, isBridgeHidActive } from "../features/bridge/bridge-hid";
@@ -2244,6 +2245,7 @@ export async function flashPendingChanges(): Promise<void> {
     : st("ctl.flashedMany", { n: written });
   setReadStatus(flashed);
   pushToast("success", flashed);
+  track("pending_changes_applied", { change_count: written });
 }
 
 function endDeviceWrite(): void {
@@ -2366,7 +2368,15 @@ function recordDiagnosticCommand(command: string): void {
   renderDeviceDiagnostics(latestDiagnosticStatus);
 }
 
+/** Model-level facts about the active device for analytics: no serials or ids. */
+function activeDeviceFacts(): { vendorId: number; productId: number; productName: string } | undefined {
+  return activeDevice
+    ? { vendorId: activeDevice.vendorId, productId: activeDevice.productId, productName: activeDevice.productName }
+    : undefined;
+}
+
 function recordDiagnosticError(error: unknown, fallback: string): void {
+  track("device_error", { ...deviceProps(activeDeviceFacts()), ...scrubError(error) });
   lastDiagnosticError = diagnosticErrorMessage(error, fallback);
   markHidActivity(lastDiagnosticError, { failed: true });
   renderDeviceDiagnostics(latestDiagnosticStatus);
@@ -2619,6 +2629,7 @@ export function downloadDiagnostics(): void {
   link.click();
   URL.revokeObjectURL(url);
   diagnosticDownloadStatus = st("ctl.savedName", { name });
+  track("diagnostics_downloaded");
   emit();
 }
 
@@ -3779,10 +3790,15 @@ export async function connect(): Promise<void> {
     });
     emit();
     await activateClient(client);
+    track("device_connected", deviceProps(activeDeviceFacts()));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to read the mouse.";
     const wrongDevice = error instanceof NotAMouseError;
     if (!wrongDevice) recordDiagnosticError(error, message);
+    track(wrongDevice ? "device_not_a_mouse" : "device_connection_failed", {
+      ...deviceProps(activeDeviceFacts()),
+      ...scrubError(error),
+    });
     if (eggClient() ?? eggWeClient()) {
       await active?.close().catch(() => undefined);
       active = null;

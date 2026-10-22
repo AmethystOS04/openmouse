@@ -194,6 +194,8 @@ export const zh: Record<I18nKey, string> = {
   "set.writes": "写入",
   "set.instantFlash": "即时写入",
   "set.instantFlashBody": "每次修改后立即写入鼠标，而不是先暂存到写入栏。",
+  "set.analytics": "共享匿名诊断信息",
+  "set.analyticsBody": "发送匿名的使用情况和设备错误报告,以便更快改进受支持的设备。不会发送 IP 地址、序列号或个人数据。",
   "set.flashImmediately": "立即写入",
   "set.sections": "分区",
   "set.advancedEditors": "高级编辑器",

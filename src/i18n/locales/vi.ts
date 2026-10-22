@@ -146,6 +146,8 @@ export const vi: Record<I18nKey, string> = {
   "set.writes": "GHI",
   "set.instantFlash": "Ghi tức thì",
   "set.instantFlashBody": "Ghi từng thay đổi vào chuột ngay khi bạn thực hiện, thay vì đưa vào hàng chờ trên thanh ghi.",
+  "set.analytics": "Chia sẻ chẩn đoán ẩn danh",
+  "set.analyticsBody": "Gửi báo cáo ẩn danh về mức sử dụng và lỗi thiết bị để cải thiện thiết bị được hỗ trợ nhanh hơn. Không gửi địa chỉ IP, số sê-ri hay dữ liệu cá nhân.",
   "set.flashImmediately": "Ghi ngay",
   "set.sections": "CÁC MỤC",
   "set.advancedEditors": "Trình chỉnh sửa nâng cao",

@@ -194,6 +194,8 @@ export const ko: Record<I18nKey, string> = {
   "set.writes": "쓰기",
   "set.instantFlash": "즉시 기록",
   "set.instantFlashBody": "변경 사항을 기록 대기열에 두지 않고, 변경할 때마다 바로 마우스에 기록합니다.",
+  "set.analytics": "익명 진단 정보 공유",
+  "set.analyticsBody": "지원 기기를 더 빨리 개선할 수 있도록 익명의 사용 및 기기 오류 보고서를 보냅니다. IP 주소, 일련번호, 개인 정보는 전송되지 않습니다.",
   "set.flashImmediately": "즉시 기록",
   "set.sections": "섹션",
   "set.advancedEditors": "고급 편집기",

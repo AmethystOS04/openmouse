@@ -194,6 +194,8 @@ export const de: Record<I18nKey, string> = {
   "set.writes": "SCHREIBVORGÄNGE",
   "set.instantFlash": "Sofortiges Flashen",
   "set.instantFlashBody": "Schreibt jede Änderung sofort auf die Maus, statt sie für die Flash-Leiste vorzubereiten.",
+  "set.analytics": "Anonyme Diagnosedaten teilen",
+  "set.analyticsBody": "Anonyme Nutzungs- und Gerätefehlerberichte senden, damit unterstützte Geräte schneller verbessert werden. Es werden weder IP-Adresse noch Seriennummer oder persönliche Daten gesendet.",
   "set.flashImmediately": "Sofort flashen",
   "set.sections": "ABSCHNITTE",
   "set.advancedEditors": "Erweiterte Editoren",

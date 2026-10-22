@@ -1,4 +1,5 @@
 import { displayText } from "../../i18n/index";
+import { track } from "../../platform/analytics";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import * as control from "../../device/controller";
 import type { ControlSnapshot } from "../../device/types";
@@ -106,6 +107,7 @@ export function HardwareTestPage({ snapshot }: { snapshot: ControlSnapshot }): R
     setStages([]);
     setLiveSample(null);
     setSamplingElapsedMs(0);
+    track("hardware_test_started");
 
     void (async () => {
       let info = deviceInfoFromSnapshot(snapshot);
@@ -372,6 +374,7 @@ export function HardwareTestPage({ snapshot }: { snapshot: ControlSnapshot }): R
         build: snapshot.buildLabel,
         supportedPage: crosscheckSupportedDevices(info, verdict),
       });
+      track("hardware_test_completed", { verdict });
     })().catch(() => {
       addStage({ kind: "check", label: "The suite crashed — restart the test", state: "fail" });
       setReport(null);
@@ -393,6 +396,7 @@ export function HardwareTestPage({ snapshot }: { snapshot: ControlSnapshot }): R
     anchor.click();
     anchor.remove();
     URL.revokeObjectURL(url);
+    track("hardware_test_report_downloaded");
   }, [report, running]);
 
   // Opens the WebHID/Bridge device picker and connects the chosen mouse.
