@@ -18,6 +18,7 @@ if (posthog) {
     disable_session_recording: true,
     person_profiles: "identified_only",
     capture_exceptions: true,
+    before_send: scrubExceptionEvent,
   });
 }
 
@@ -53,16 +54,54 @@ export function deviceProps(device: DeviceFacts | null | undefined): Record<stri
   return props;
 }
 
-/** Error text with paths, long hex ids and emails removed, and capped. */
-export function scrubError(error: unknown): { error_name: string; error_message: string } {
-  const name = error instanceof Error ? error.name : "Error";
-  const raw = error instanceof Error ? error.message : String(error);
-  const message = raw
+/** Text with emails, paths and long hex ids (serials, receiver ids) removed, and capped. */
+function scrubText(raw: string): string {
+  return raw
     .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, "<email>")
     .replace(/(?:[A-Za-z]:)?[\\/][\w .\\/-]{3,}/g, "<path>")
     .replace(/\b[0-9a-fA-F]{12,}\b/g, "<id>")
     .slice(0, 200);
-  return { error_name: name, error_message: message };
+}
+
+export function scrubError(error: unknown): { error_name: string; error_message: string } {
+  const name = error instanceof Error ? error.name : "Error";
+  return { error_name: name, error_message: scrubText(error instanceof Error ? error.message : String(error)) };
+}
+
+interface ExceptionFrame { filename?: string; abs_path?: string; [key: string]: unknown }
+interface ExceptionEntry { type?: string; value?: string; stacktrace?: { frames?: ExceptionFrame[] }; [key: string]: unknown }
+interface OutgoingEvent { event: string; properties?: Record<string, unknown> }
+
+/** Frame files stay only when they are the app's own bundles, so stacks still de-minify. */
+function ownFile(file: string | undefined): string | undefined {
+  return file && file.startsWith(location.origin) ? file.split(/[?#]/)[0] : undefined;
+}
+
+/** Scrubs automatic `$exception` events before they leave the browser. */
+function scrubExceptionEvent<T extends OutgoingEvent | null>(event: T): T {
+  if (!event || event.event !== "$exception" || !event.properties) return event;
+  const props = event.properties;
+  const list = props.$exception_list;
+  if (Array.isArray(list)) {
+    props.$exception_list = (list as ExceptionEntry[]).map((entry) => ({
+      ...entry,
+      value: typeof entry.value === "string" ? scrubText(entry.value) : entry.value,
+      stacktrace: entry.stacktrace
+        ? {
+            ...entry.stacktrace,
+            frames: entry.stacktrace.frames?.map((frame) => ({
+              ...frame,
+              filename: ownFile(frame.filename),
+              abs_path: ownFile(frame.abs_path),
+            })),
+          }
+        : entry.stacktrace,
+    }));
+  }
+  for (const key of ["$exception_message", "$exception_value"]) {
+    if (typeof props[key] === "string") props[key] = scrubText(props[key] as string);
+  }
+  return event;
 }
 
 export function track(event: string, props?: Record<string, unknown>): void {

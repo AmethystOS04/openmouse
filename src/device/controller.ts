@@ -2375,8 +2375,8 @@ function activeDeviceFacts(): { vendorId: number; productId: number; productName
     : undefined;
 }
 
-function recordDiagnosticError(error: unknown, fallback: string): void {
-  track("device_error", { ...deviceProps(activeDeviceFacts()), ...scrubError(error) });
+function recordDiagnosticError(error: unknown, fallback: string, report = true): void {
+  if (report) track("device_error", { ...deviceProps(activeDeviceFacts()), ...scrubError(error) });
   lastDiagnosticError = diagnosticErrorMessage(error, fallback);
   markHidActivity(lastDiagnosticError, { failed: true });
   renderDeviceDiagnostics(latestDiagnosticStatus);
@@ -3662,7 +3662,9 @@ function handleHidDisconnect(event: HIDConnectionEvent): void {
 }
 
 /** Ask the browser for a device, then pick the best keyboard or mouse client. */
-async function requestSupportedClient(): Promise<SupportedClient | KeyboardClient | null> {
+async function requestSupportedClient(
+  onSelected?: (device: HIDDevice) => void,
+): Promise<SupportedClient | KeyboardClient | null> {
   if (!navigator.hid) throw new Error(st("ctl.noWebHid"));
   const devices = await navigator.hid.requestDevice({ filters: HID_FILTERS });
   if (devices.length === 0) {
@@ -3678,6 +3680,9 @@ async function requestSupportedClient(): Promise<SupportedClient | KeyboardClien
     }
     return null;
   }
+  // Remember what was picked now, so a failure reports this device and not
+  // whichever one happens to be active when the error lands.
+  onSelected?.(devices[0]);
 
   if (devices.some((device) => eggWeIsSupported(device))) {
     const weClient = eggWeFromAuthorized(await eggWeAuthorizedPool(devices));
@@ -3775,8 +3780,11 @@ export async function connect(): Promise<void> {
   readStatus = st("ctl.choosePrompt");
   emit();
 
+  let attempted: { vendorId: number; productId: number; productName: string } | undefined;
   try {
-    const client = await requestSupportedClient();
+    const client = await requestSupportedClient((device) => {
+      attempted = { vendorId: device.vendorId, productId: device.productId, productName: device.productName };
+    });
     if (!client) {
       deviceStatusText = st("ctl.notConnected");
       readStatus = st("ctl.noSelection");
@@ -3790,13 +3798,13 @@ export async function connect(): Promise<void> {
     });
     emit();
     await activateClient(client);
-    track("device_connected", deviceProps(activeDeviceFacts()));
+    track("device_connected", deviceProps(attempted));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to read the mouse.";
     const wrongDevice = error instanceof NotAMouseError;
-    if (!wrongDevice) recordDiagnosticError(error, message);
+    if (!wrongDevice) recordDiagnosticError(error, message, false);
     track(wrongDevice ? "device_not_a_mouse" : "device_connection_failed", {
-      ...deviceProps(activeDeviceFacts()),
+      ...deviceProps(attempted),
       ...scrubError(error),
     });
     if (eggClient() ?? eggWeClient()) {
