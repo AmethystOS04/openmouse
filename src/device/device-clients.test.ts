@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { describeHidDevice } from "./hid-diagnostics.ts";
-import { createSupportedClient, listLogicalDevices, logicalDeviceGroups } from "./device-clients.ts";
+import { createSupportedClient, listLogicalDevices, logicalDeviceGroups, prepareAutoConnectClient } from "./device-clients.ts";
 
 function supportedWebHidDevice(options: {
   vendorId?: number;
@@ -107,4 +107,68 @@ test("Bridge devices keep their native per-physical-device identity", () => {
 
   assert.equal(logicalDeviceGroups(devices).length, 2);
   assert.equal(listLogicalDevices(devices).length, 2);
+});
+
+function answeringBridgeRazer(key: string, answers: boolean, usages = [[0x01, 0x02]]): HIDDevice {
+  let reply = new Uint8Array(90);
+  const device = {
+    ...bridgeDevice(key, "Razer Basilisk V3 Pro 35K"),
+    productId: 0x00cc,
+    collections: usages.map(([usagePage, usage]) => ({
+      usagePage, usage, inputReports: [], outputReports: [], featureReports: [], children: [],
+    })),
+    opened: false,
+    async open() { this.opened = true; },
+    async close() { this.opened = false; },
+    async sendFeatureReport(reportId: number, data: Uint8Array) {
+      assert.equal(reportId, 0);
+      assert.equal(data[6], 0x00);
+      assert.equal(data[7], 0x81, "automatic selection must only probe firmware");
+      if (!answers) throw new Error("HidD_SetFeature: Incorrect function");
+      reply = new Uint8Array(data);
+      reply[0] = 0x02;
+    },
+    async receiveFeatureReport() { return new DataView(reply.buffer); },
+  };
+  return device as unknown as HIDDevice;
+}
+
+test("automatic Bridge selection rejects a dead Razer sibling without closing the working interface", async (t) => {
+  Object.defineProperty(globalThis, "window", { configurable: true, value: { setTimeout } });
+  t.after(() => Reflect.deleteProperty(globalThis, "window"));
+  const working = answeringBridgeRazer("working", true);
+  await working.open();
+  const sibling = answeringBridgeRazer("sibling", false, [[0x01, 0x80], [0x0c, 0x01]]);
+  const candidate = createSupportedClient(sibling);
+  assert.ok(candidate);
+
+  assert.equal(await prepareAutoConnectClient(candidate), null);
+  assert.equal(sibling.opened, false);
+  assert.equal(working.opened, true);
+});
+
+test("automatic Bridge selection keeps answering Razer interfaces regardless of collection shape", async (t) => {
+  Object.defineProperty(globalThis, "window", { configurable: true, value: { setTimeout } });
+  t.after(() => Reflect.deleteProperty(globalThis, "window"));
+  for (const usages of [[[0x01, 0x02]], [[0x0c, 0x01]], []]) {
+    const device = answeringBridgeRazer("working", true, usages);
+    const candidate = createSupportedClient(device);
+    assert.ok(candidate);
+    const prepared = await prepareAutoConnectClient(candidate);
+    assert.ok(prepared);
+    assert.equal(prepared.device, device);
+    assert.equal(device.opened, true);
+    await prepared.close();
+  }
+});
+
+test("automatic selection leaves specialized Razer and WebHID clients on their existing paths", async () => {
+  for (const device of [
+    { ...bridgeDevice("v4"), productId: 0x00e5 },
+    supportedWebHidDevice(),
+  ]) {
+    const client = createSupportedClient(device as HIDDevice);
+    assert.ok(client);
+    assert.equal(await prepareAutoConnectClient(client), client);
+  }
 });
