@@ -6,7 +6,7 @@ import {
   COBRA_PRODUCT_ID,
   RazerCobraHidClient,
 } from "@openmouse/protocol/drivers/razer/cobra-hid";
-import { RazerHidClient } from "@openmouse/protocol/drivers/razer/hid";
+import { RazerHidClient, razerProbeControlInterface } from "@openmouse/protocol/drivers/razer/hid";
 import {
   RazerViperHidClient,
   VIPER_PRODUCT_ID,
@@ -50,6 +50,13 @@ function bridgeRazerClient(device: HIDDevice): SupportedClient | null {
 
 export function createSupportedClient(device: HIDDevice): SupportedClient | null {
   return registryCreateSupportedClient(device) ?? bridgeRazerClient(device);
+}
+
+export async function prepareAutoConnectClient(client: SupportedClient): Promise<SupportedClient | null> {
+  if (!(client instanceof RazerHidClient)
+    || (client.device as NativeBridgeDevice).openMouseTransport !== "bridge") return client;
+  // Bridge can expose a sibling with the same VID/PID that cannot answer commands.
+  return razerProbeControlInterface([client.device]);
 }
 
 export type { KeyboardClient };

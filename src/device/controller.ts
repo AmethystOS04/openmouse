@@ -16,6 +16,7 @@ import {
   listLogicalDevices,
   logicalDeviceGroups,
   pickLogicalDevice,
+  prepareAutoConnectClient,
   type PulsarClient,
   type SupportedClient,
 } from "./device-clients";
@@ -3528,10 +3529,34 @@ async function loadKeyboardTrigger(client: KeyboardClient): Promise<void> {
 }
 
 /** Queue a device activation so only one keyboard/mouse switch runs at a time. */
-function activateClient(target: SupportedClient | KeyboardClient): Promise<void> {
+function activateClient(target: SupportedClient | KeyboardClient, autoConnect = false): Promise<void> {
   const run = activationQueue.then(async () => {
     activationInProgress = true;
     try {
+      if (autoConnect && !isKeyboardClient(target)) {
+        if (target.device === activeDevice) {
+          await refreshSidebar();
+          return;
+        }
+        const prepared = await prepareAutoConnectClient(target);
+        if (!prepared) {
+          await refreshSidebar();
+          return;
+        }
+        // A probe opens the candidate; discard it if unplugged while it answered.
+        if (prepared !== target) {
+          const devices = await navigator.hid?.getDevices().catch(() => []) ?? [];
+          if (!devices.includes(prepared.device)) {
+            if (activeDevice !== prepared.device) await prepared.close().catch(() => undefined);
+            await refreshSidebar();
+            return;
+          }
+        }
+        target = prepared;
+        deviceStatusText = st("ctl.newDevice");
+        readStatus = st("ctl.reading", { name: statusNameForClient(target) });
+        emit();
+      }
       if (isKeyboardClient(target)) await activateKeyboardClientNow(target);
       else await activateClientNow(target);
     } finally {
@@ -3635,10 +3660,7 @@ function handleHidConnect(event: HIDConnectionEvent): void {
     return;
   }
 
-  deviceStatusText = st("ctl.newDevice");
-  readStatus = st("ctl.reading", { name: statusNameForClient(client) });
-  emit();
-  void activateClient(client).catch((error: unknown) => {
+  void activateClient(client, true).catch((error: unknown) => {
     deviceStatusText = st("ctl.connFailed");
     readStatus = error instanceof Error ? error.message : st("ctl.unableRead");
     toastForError("Connection failed", error);
