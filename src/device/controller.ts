@@ -1,4 +1,5 @@
 import { emptyKeyboardWorkspace } from "./keyboard-workspace.ts";
+import { track, deviceProps, scrubError } from "../platform/analytics";
 import type { KeyboardCommand } from "./keyboard-workspace.ts";
 import { cachedBatterySamples, estimateBatteryTime, estimateFromRatedLife, ratedBattery, recordBatterySample, type BatteryMode } from "../features/devices/battery-history";
 import { bridgeEmptyResultMessage, isBridgeHidActive } from "../features/bridge/bridge-hid";
@@ -2244,6 +2245,7 @@ export async function flashPendingChanges(): Promise<void> {
     : st("ctl.flashedMany", { n: written });
   setReadStatus(flashed);
   pushToast("success", flashed);
+  track("pending_changes_applied", { change_count: written });
 }
 
 function endDeviceWrite(): void {
@@ -2366,7 +2368,15 @@ function recordDiagnosticCommand(command: string): void {
   renderDeviceDiagnostics(latestDiagnosticStatus);
 }
 
-function recordDiagnosticError(error: unknown, fallback: string): void {
+/** Model-level facts about the active device for analytics: no serials or ids. */
+function activeDeviceFacts(): { vendorId: number; productId: number; productName: string } | undefined {
+  return activeDevice
+    ? { vendorId: activeDevice.vendorId, productId: activeDevice.productId, productName: activeDevice.productName }
+    : undefined;
+}
+
+function recordDiagnosticError(error: unknown, fallback: string, report = true): void {
+  if (report) track("device_error", { ...deviceProps(activeDeviceFacts()), ...scrubError(error) });
   lastDiagnosticError = diagnosticErrorMessage(error, fallback);
   markHidActivity(lastDiagnosticError, { failed: true });
   renderDeviceDiagnostics(latestDiagnosticStatus);
@@ -2619,6 +2629,7 @@ export function downloadDiagnostics(): void {
   link.click();
   URL.revokeObjectURL(url);
   diagnosticDownloadStatus = st("ctl.savedName", { name });
+  track("diagnostics_downloaded");
   emit();
 }
 
@@ -3651,7 +3662,9 @@ function handleHidDisconnect(event: HIDConnectionEvent): void {
 }
 
 /** Ask the browser for a device, then pick the best keyboard or mouse client. */
-async function requestSupportedClient(): Promise<SupportedClient | KeyboardClient | null> {
+async function requestSupportedClient(
+  onSelected?: (device: HIDDevice) => void,
+): Promise<SupportedClient | KeyboardClient | null> {
   if (!navigator.hid) throw new Error(st("ctl.noWebHid"));
   const devices = await navigator.hid.requestDevice({ filters: HID_FILTERS });
   if (devices.length === 0) {
@@ -3667,6 +3680,9 @@ async function requestSupportedClient(): Promise<SupportedClient | KeyboardClien
     }
     return null;
   }
+  // Remember what was picked now, so a failure reports this device and not
+  // whichever one happens to be active when the error lands.
+  onSelected?.(devices[0]);
 
   if (devices.some((device) => eggWeIsSupported(device))) {
     const weClient = eggWeFromAuthorized(await eggWeAuthorizedPool(devices));
@@ -3764,8 +3780,11 @@ export async function connect(): Promise<void> {
   readStatus = st("ctl.choosePrompt");
   emit();
 
+  let attempted: { vendorId: number; productId: number; productName: string } | undefined;
   try {
-    const client = await requestSupportedClient();
+    const client = await requestSupportedClient((device) => {
+      attempted = { vendorId: device.vendorId, productId: device.productId, productName: device.productName };
+    });
     if (!client) {
       deviceStatusText = st("ctl.notConnected");
       readStatus = st("ctl.noSelection");
@@ -3779,10 +3798,15 @@ export async function connect(): Promise<void> {
     });
     emit();
     await activateClient(client);
+    track("device_connected", deviceProps(attempted));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to read the mouse.";
     const wrongDevice = error instanceof NotAMouseError;
-    if (!wrongDevice) recordDiagnosticError(error, message);
+    if (!wrongDevice) recordDiagnosticError(error, message, false);
+    track(wrongDevice ? "device_not_a_mouse" : "device_connection_failed", {
+      ...deviceProps(attempted),
+      ...scrubError(error),
+    });
     if (eggClient() ?? eggWeClient()) {
       await active?.close().catch(() => undefined);
       active = null;

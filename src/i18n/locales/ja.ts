@@ -194,6 +194,8 @@ export const ja: Record<I18nKey, string> = {
   "set.writes": "書き込み",
   "set.instantFlash": "即時書き込み",
   "set.instantFlashBody": "変更を書き込みバーに保留せず、変更するたびにすぐマウスへ書き込みます。",
+  "set.analytics": "匿名の診断情報を共有",
+  "set.analyticsBody": "対応デバイスをより早く改善するため、匿名の利用状況とデバイスエラーのレポートを送信します。IPアドレス、シリアル番号、個人情報は送信されません。",
   "set.flashImmediately": "即座に書き込む",
   "set.sections": "セクション",
   "set.advancedEditors": "詳細エディター",

@@ -194,6 +194,8 @@ export const fr: Record<I18nKey, string> = {
   "set.writes": "ÉCRITURES",
   "set.instantFlash": "Gravure instantanée",
   "set.instantFlashBody": "Écrit chaque modification sur la souris dès que vous la faites, au lieu de la préparer pour la barre de gravure.",
+  "set.analytics": "Partager des diagnostics anonymes",
+  "set.analyticsBody": "Envoie des rapports anonymes d'utilisation et d'erreurs d'appareil pour corriger plus vite les appareils pris en charge. Aucune adresse IP, aucun numéro de série ni donnée personnelle n'est envoyé.",
   "set.flashImmediately": "Graver immédiatement",
   "set.sections": "SECTIONS",
   "set.advancedEditors": "Éditeurs avancés",

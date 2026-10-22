@@ -194,6 +194,8 @@ export const es: Record<I18nKey, string> = {
   "set.writes": "ESCRITURAS",
   "set.instantFlash": "Grabado instantáneo",
   "set.instantFlashBody": "Escribe cada cambio en el mouse en cuanto lo haces, en lugar de prepararlo en la barra de grabado.",
+  "set.analytics": "Compartir diagnósticos anónimos",
+  "set.analyticsBody": "Envía informes anónimos de uso y errores de dispositivos para corregir antes los dispositivos compatibles. No se envía la dirección IP, el número de serie ni datos personales.",
   "set.flashImmediately": "Grabar inmediatamente",
   "set.sections": "SECCIONES",
   "set.advancedEditors": "Editores avanzados",

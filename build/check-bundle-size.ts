@@ -1,9 +1,11 @@
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
+// JS raised from 2_800_000: posthog-js (anonymous analytics, src/platform/analytics.ts)
+// added about 340 kB; measured 3_125_781 bytes with it.
 const BUDGET_BYTES: Record<string, number> = {
   ".css": 165_000,
-  ".js": 2_800_000,
+  ".js": 3_150_000,
 };
 
 const ASSETS = join("dist", "assets");

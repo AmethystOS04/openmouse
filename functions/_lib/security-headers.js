@@ -22,14 +22,14 @@
 
 export const CSP = [
   "default-src 'self'",
-  "script-src 'self'",
+  "script-src 'self' https://us-assets.i.posthog.com",
   "script-src-attr 'none'",
   "style-src 'self' https://fonts.googleapis.com",
   "style-src-attr 'none'",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://img.openmouse.app https://cdn.cloudflare.steamstatic.com https://shared.akamai.steamstatic.com https://store-images.s-microsoft.com http://127.0.0.1:17846",
   "media-src 'self'",
-  "connect-src 'self' https://api.github.com https://cdn.jsdelivr.net http://127.0.0.1:17846 ws://127.0.0.1:17846",
+  "connect-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com https://api.github.com https://cdn.jsdelivr.net http://127.0.0.1:17846 ws://127.0.0.1:17846",
   "worker-src 'self'",
   "manifest-src 'self'",
   "object-src 'none'",

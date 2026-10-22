@@ -1,4 +1,5 @@
 import { displayText } from "../../i18n/index";
+import { analyticsAvailable, analyticsEnabled, setAnalyticsEnabled, track } from "../../platform/analytics";
 import { Globe, RotateCcw } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import * as control from "../../device/controller";
@@ -48,6 +49,7 @@ export function ProfileKeyFields({ snapshot }: { snapshot: ControlSnapshot }): R
           onClick={() => {
             if (!key) return;
             void navigator.clipboard.writeText(key).then(() => {
+              track("profile_key_copied");
               setCopied(true);
               setTimeout(() => setCopied(false), 1500);
             });
@@ -116,6 +118,7 @@ function SettingsGroup({ id, title, children }: { id: string; title: string; chi
 export function InterfaceSettings({ snapshot }: { snapshot: ControlSnapshot }): ReactNode {
   const preferences = snapshot.preferences;
   const locale = preferences.locale;
+  const [analyticsOn, setAnalyticsOn] = useState(analyticsEnabled);
   const set = <K extends keyof typeof preferences>(key: K) => (value: (typeof preferences)[K]): void =>
     control.setPreference(key, value);
 
@@ -192,6 +195,12 @@ export function InterfaceSettings({ snapshot }: { snapshot: ControlSnapshot }): 
         {toggle("interface-sounds", t(locale, "set.soundTitle"), t(locale, "set.soundDescription"), preferences.enabledSounds, set("enabledSounds"))}
         {toggle("interface-expand-sections", t(locale, "set.advancedEditors"), t(locale, "set.advancedEditorsBody"), preferences.expandSections, set("expandSections"))}
         {toggle("interface-show-experimental", t(locale, "set.experimentalTitle"), t(locale, "set.experimentalBody"), preferences.showExperimental, set("showExperimental"))}
+        {analyticsAvailable
+          ? toggle("interface-analytics", t(locale, "set.analytics"), t(locale, "set.analyticsBody"), analyticsOn, (next) => {
+              setAnalyticsEnabled(next);
+              setAnalyticsOn(next);
+            })
+          : null}
       </SettingsGroup>
 
       <SettingsGroup id="settings-profile-key" title={t(locale, "set.profileKey")}>

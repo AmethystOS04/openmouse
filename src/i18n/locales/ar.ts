@@ -193,6 +193,8 @@ export const ar: Record<I18nKey, string> = {
   "set.writes": "الكتابة",
   "set.instantFlash": "التثبيت الفوري",
   "set.instantFlashBody": "اكتب كل تغيير إلى الماوس فور إجرائه، بدلًا من تجهيزه لشريط التثبيت.",
+  "set.analytics": "مشاركة بيانات التشخيص المجهولة",
+  "set.analyticsBody": "إرسال تقارير مجهولة عن الاستخدام وأخطاء الأجهزة لإصلاح الأجهزة المدعومة بشكل أسرع. لا يتم إرسال عنوان IP أو الرقم التسلسلي أو أي بيانات شخصية.",
   "set.flashImmediately": "ثبّت فورًا",
   "set.sections": "الأقسام",
   "set.advancedEditors": "المحررات المتقدمة",

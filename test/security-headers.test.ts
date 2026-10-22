@@ -42,7 +42,7 @@ test("public/_headers mirrors the canonical security header set", () => {
 
 test("the deployed CSP keeps scripts same-origin and inline-free", () => {
   assert.equal(directive("default-src"), "default-src 'self'");
-  assert.equal(directive("script-src"), "script-src 'self'");
+  assert.equal(directive("script-src"), "script-src 'self' https://us-assets.i.posthog.com");
   assert.ok(!CSP.includes("'unsafe-inline'"), "no directive may allow inline code");
   assert.ok(!CSP.includes("'unsafe-eval'"), "eval must stay blocked");
   assert.equal(directive("script-src-attr"), "script-src-attr 'none'");
@@ -61,6 +61,8 @@ test("the deployed CSP enforces Trusted Types with the app policy", () => {
 test("the deployed CSP allows every origin the app talks to", () => {
   const connect = directive("connect-src");
   for (const origin of [
+    "https://us.i.posthog.com",
+    "https://us-assets.i.posthog.com",
     "https://api.github.com",
     "https://cdn.jsdelivr.net",
     "http://127.0.0.1:17846",
@@ -68,6 +70,7 @@ test("the deployed CSP allows every origin the app talks to", () => {
   ]) {
     assert.ok(connect.includes(origin), `connect-src must include ${origin}`);
   }
+  assert.equal(directive("worker-src"), "worker-src 'self'");
   assert.ok(directive("style-src").includes("https://fonts.googleapis.com"));
   assert.ok(directive("font-src").includes("https://fonts.gstatic.com"));
   assert.ok(directive("img-src").includes("https://img.openmouse.app"));
