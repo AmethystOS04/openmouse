@@ -19,7 +19,7 @@ jobs:
           node-version: 24
           cache: npm
 
-      - run: npm ci
+      - run: npm install
 
       - name: Type check and build
         run: npm run build
@@ -38,8 +38,9 @@ jobs:
           node <<'NODE'
           const { dependencies = {} } = require("./package.json");
           const protocolVersion = dependencies["@openmouse/protocol"];
-          if (!/^\d+\.\d+\.\d+$/.test(protocolVersion)) {
-            console.error("Protocol dependency must be an exact stable npm version.");
+          const protocolApproved = protocolVersion === "github:AmethystOS04/mouse-protocol#feat/rival3-gen2-rgb";
+          if (!protocolApproved && !/^\d+\.\d+\.\d+$/.test(protocolVersion)) {
+            console.error("Protocol dependency must be the RGB fork or an exact stable npm version.");
             process.exit(1);
           }
           const keyboardProtocolVersion = dependencies["@openmouse/keyboard-protocol"];
