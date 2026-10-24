@@ -33,6 +33,7 @@ function betaBuildVersion(): string {
 const buildId = buildChannel === "beta" ? betaBuildVersion() : "";
 
 export default defineConfig({
+  base: process.env.GITHUB_PAGES === "true" ? "/openmouse/" : "/",
   plugins: [sites(), pwa(packageVersion.version), devFeedback()],
   resolve: {
     // Prefix aliases, so react-dom/client and react/jsx-runtime follow too.
