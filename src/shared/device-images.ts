@@ -175,6 +175,9 @@ function computeDeviceImageFilename(displayName: string): string {
   if (/\bpro\s*intellimouse\b/i.test(displayName)) return "microsoft-pro-intellimouse.png";
   if (/\bintellimouse\b/i.test(displayName)) return "microsoft-classic-intellimouse.png";
   if (/\bpulsefire\s*haste\b/i.test(displayName)) return "hyperx-pulsefire-haste.png";
+  // Rival 3 Gen 2 wired artwork is checked into this fork while upstream art
+  // hosting is unavailable to the fork.
+  if (/\brival\s*3\s*gen\s*2\b/i.test(displayName)) return "steelseries-rival-3-gen-2.svg";
   // Pulsar 4K Wireless Receiver ships with the X2 V2 4K dongle kit; the receiver
   // product id is not yet published, so match the name reported by WebHID.
   if (/pulsar/i.test(displayName)) return "pulsar-x2-v2.png";
@@ -213,6 +216,7 @@ const LOCAL_OVERRIDES: Readonly<Record<string, string>> = {
   "delux-m800-mini.png": "/devices/delux-m800-mini.png",
   "ipi-float-88.png": "/devices/ipi-float-88.png",
   "asus-rog-harpe-ace-aim-lab.png": "/devices/asus-rog-harpe-ace-aim-lab.png",
+  "steelseries-rival-3-gen-2.svg": "/devices/steelseries-rival-3-gen-2.svg",
 };
 
 export function deviceImage(device: HIDDevice | null | undefined, displayName = ""): string {
