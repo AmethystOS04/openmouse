@@ -43,11 +43,6 @@ function computeDeviceImageFilename(displayName: string): string {
   // few lines down covers every other Superlight generation.
   if (/\bpro\s*x\s*wireless\b/i.test(displayName)) return "logitech-pro-x-superlight-2c.png";
   if (/mx\s*master\s*4/i.test(displayName)) return "unknown-device.png";
-  // PRO X3 SUPERSTRIKE (0xc54f receiver) shares the Superstrike name with the
-  // X2 but is a different shell revision ("PRO X3" on the clicks, midnight
-  // black hero SKU), so it gets its own render. Must run before the X2
-  // fallback below; requires "superstrike" in the match so Attack Shark X3
-  // (no Superstrike in the name) never lands here.
   if (/superstrike/i.test(displayName) && /x\s*3/i.test(displayName)) return "logitech-pro-x3-superstrike.png";
   if (/superstrike/i.test(displayName)) return "logitech-pro-x2-superstrike.png";
   if (/superlight/i.test(displayName)) return "logitech-pro-x-superlight-2c.png";
@@ -60,33 +55,20 @@ function computeDeviceImageFilename(displayName: string): string {
   if (/\bcobra\b/i.test(displayName)) return "razer-cobra.webp";
   if (/\bnape\s*pro\b/i.test(displayName)) return "unknown-device.png";
   if (/\bko-one\b/i.test(displayName)) return "crdrako-ko-one.png";
-  if (/\bvxe\s+r1(?:\s+(?:se\+?|pro(?:\s+max)?))?\b/i.test(displayName)) {
-    return "vxe-r1-series.png";
-  }
+  if (/\bvxe\s+r1(?:\s+(?:se\+?|pro(?:\s+max)?))?\b/i.test(displayName)) return "vxe-r1-series.png";
   if (/\br5\s*ultra\b/i.test(displayName)) return "attackshark-r5-ultra.png";
   if (/\bfloat\s*88\b/i.test(displayName)) return "ipi-float-88.png";
   if (/\batk\s*zero\b/i.test(displayName)) return "atk-zero.png";
-  // R2 shares PID 0x402D with the Lingbao M5 Pro, so it can only be told apart
-  // by the name the gearhub driver reads back from the device id.
   if (/\battack\s*shark\s*r2\b/i.test(displayName)) return "attackshark-r2.png";
-  if (/\bdelux\b.*\bm800/i.test(displayName) || /\bm800\s*(mini|pro)?\b/i.test(displayName)) {
-    return "delux-m800-mini.png";
-  }
-  // X3 / X3 Pro share one shell. Brand-scoped so Pulsar X3 (matched by the
-  // generic /pulsar/i rule below) never borrows this render, and so X11/X1
-  // don't match.
+  if (/\bdelux\b.*\bm800/i.test(displayName) || /\bm800\s*(mini|pro)?\b/i.test(displayName)) return "delux-m800-mini.png";
   if (/\battack\s*shark\s*x3\b/i.test(displayName)) return "attackshark-x3.png";
   if (/\bm[23]k\b/i.test(displayName)) return "zaunkoenig-m3k.png";
-  // Name, not PID: over the ROG Omni receiver the device is 0x1ACE.
   if (/\bharpe\s*ace\s*aim\s*lab\b/i.test(displayName)) return "asus-rog-harpe-ace-aim-lab.png";
   if (/\bmx\s*master\s*3s\b/i.test(displayName)) return "logitech-mx-master-3s.png";
   if (/\bterra\s*pro\b/i.test(displayName)) return "teevolution-terra-pro.png";
   if (/\bm-001\b/i.test(displayName)) return "wallhack-m-001.png";
   if (/\bk-001\b/i.test(displayName)) return "wallhack-k-001.png";
   if (/\bnightsword\b/i.test(displayName)) return "unknown-device.png";
-  // Newer supported-model artwork resolved from the reported product name. These
-  // run after the shared-receiver checks above but before the Pulsar/unknown
-  // catch-alls. Test-needed (likely) models are deliberately left out.
   if (/\bg(?:102|203)\b/i.test(displayName)) return "logitech-g203.png";
   if (/\bg303\b/i.test(displayName)) return "logitech-g303.png";
   if (/\bg402\b/i.test(displayName)) return "logitech-g402.png";
@@ -95,34 +77,20 @@ function computeDeviceImageFilename(displayName: string): string {
   if (/\bg30[45]\b/i.test(displayName)) return "logitech-g305.png";
   if (/\bg309\b/i.test(displayName)) return "logitech-g309.png";
   if (/\bg\s*pro\s*2\b/i.test(displayName)) return "logitech-g-pro-2.png";
-  // Wireless resolves to its own render; the shared Lightspeed receiver PID
-  // (0xc539) is why this has to be a name check rather than a PID entry.
   if (/\bg\s*pro\s*wireless\b/i.test(displayName)) return "logitech-gpro-wireless.png";
   if (/\bg\s*pro\b/i.test(displayName)) return "logitech-g-pro.png";
   if (/\bmx\s*anywhere\s*3\b/i.test(displayName)) return "logitech-mx-anywhere-3.png";
   if (/\bmx\s*ergo\b/i.test(displayName)) return "logitech-mx-ergo-s.png";
   if (/\bdeathadder\s*v4\b/i.test(displayName)) return "razer-deathadder-v4-pro.png";
   if (/\bdeathadder\s*v3\s*hyperspeed\b/i.test(displayName)) return "razer-deathadder-v3-hyperspeed.png";
-  // V3 and V3 Pro are one shell (the Pro drops the cable), so the Pro shares
-  // the V3 render the same way the V2 family shares one below. The Pro used
-  // to be excluded here while it was still test-needed; it has since been
-  // verified on hardware (mouse-protocol `0x00b7`). HyperSpeed is a different
-  // shell and is matched above.
   if (/\bdeathadder\s*v3\b/i.test(displayName)) return "razer-deathadder-v3.png";
   if (/\bdeathadder\s*v2\b(?!\s*x\s*hyperspeed\b)/i.test(displayName)) return "razer-deathadder-v2.png";
   if (/\bdeathadder\s*essential\b/i.test(displayName)) return "razer-deathadder-v2.png";
   if (/\bviper\s*v3\s*hyperspeed\b/i.test(displayName)) return "razer-viper-v3-hyperspeed.png";
   if (/\bviper\s*v4\b/i.test(displayName)) return "razer-viper-v4-pro.png";
-  // Catches the plain original Viper. Every other Viper generation is matched
-  // above, so this must run last among the viper checks — excluding every
-  // variant with no render of its own, so it falls to the placeholder rather
-  // than borrowing this one.
   if (/\bviper\b(?!\s*(ultimate|8khz|mini|v2|v3|v4))/i.test(displayName)) return "razer-viper.webp";
   if (/\bxm2\s*8k\b/i.test(displayName)) return "endgame-gear-xm2-8k.png";
   if (/\bxm2w\b/i.test(displayName)) return "endgame-gear-xm2w.png";
-  // WLMouse receivers are shared across models — the 1K dongle enumerates under
-  // one product id whatever it is paired with — so the model only arrives in the
-  // name the driver reads back from the mouse.
   if (/\bbeast\s*max\b/i.test(displayName)) return "wlmouse-beast-max.png";
   if (/\bbeast\s*g\b/i.test(displayName)) return "wlmouse-beast-g.png";
   if (/\bbeast\s*x\s*pro\b/i.test(displayName)) return "unknown-device.png";
@@ -141,16 +109,6 @@ function computeDeviceImageFilename(displayName: string): string {
   if (/\bsora\s*v3\b/i.test(displayName)) return "ninjutso-sora-v3.png";
   if (/\bsora\s*v2\b/i.test(displayName)) return "ninjutso-sora-v2.png";
   if (/\bninjutso\b.*\bten\b/i.test(displayName)) return "ninjutso-ten.png";
-  // Incott: six model families, each sold in a base and a Pro version with
-  // a different shell finish, so all twelve get their own render. The driver
-  // reads the model from the device and appends "Pro" when the PAW3950 is
-  // fitted (see incott/index.ts), giving names like "Ghero", "G23V2 Pro" or
-  // "Zero 39". Wired with no identity read it falls back to the product
-  // string, "Esports G23V2Pro", which these same patterns match because
-  // every separator is optional.
-  //
-  // Each Pro pattern MUST precede its base model, and the G23V2 pair must
-  // precede the plain G23 pair, or the looser rule swallows the tighter one.
   if (/\bg23\s*v2\s*pro\b/i.test(displayName)) return "incott-g23-v2-pro.png";
   if (/\bg23\s*v2\b/i.test(displayName)) return "incott-g23-v2.png";
   if (/\bg23\s*pro\b/i.test(displayName)) return "incott-g23-pro.png";
@@ -164,9 +122,6 @@ function computeDeviceImageFilename(displayName: string): string {
   if (/\bzero\s*39\s*pro\b/i.test(displayName)) return "incott-zero-39-pro.png";
   if (/\bzero\s*39\b/i.test(displayName)) return "incott-zero-39.png";
   if (/\bkeychron\s*m6\b/i.test(displayName)) return "keychron-m6.png";
-  // Starlight X is a different shell from the ULX/Starlight-12, so it gets its
-  // own render instead of borrowing the ULX's. Until the file is uploaded the
-  // panel falls back to the placeholder at image-load time.
   if (/\bstarlight\s*x\b|\bslx\b/i.test(displayName)) return "finalmouse-slx.png";
   if (/\b(finalmouse|starlight|ulx)\b/i.test(displayName)) return "finalmouse-ulx.png";
   if (/\borbital\b/i.test(displayName)) return "unknown-device.png";
@@ -178,39 +133,12 @@ function computeDeviceImageFilename(displayName: string): string {
   // Rival 3 Gen 2 wired artwork is checked into this fork while upstream art
   // hosting is unavailable to the fork.
   if (/\brival\s*3\s*gen\s*2\b/i.test(displayName)) return "steelseries-rival-3-gen-2.svg";
-  // Pulsar 4K Wireless Receiver ships with the X2 V2 4K dongle kit; the receiver
-  // product id is not yet published, so match the name reported by WebHID.
   if (/pulsar/i.test(displayName)) return "pulsar-x2-v2.png";
-  // Noir Gear M2-NEX uses the shared K-snake transport, but has its own
-  // retail shell. Keep its artwork match name-based so USB and 2.4 GHz
-  // receiver connections resolve to the same product image.
-  if (/m2\s*[-_]?\s*nex/i.test(displayName)) return "noir-m2-nex.png";
-  if (/\bm1\s*[-_]?\s*nex\b/i.test(displayName)) return "noir-m1-nex.png";
-  if (/\bnoir\s*e1\b/i.test(displayName)) return "noir-e1.png";
-  if (/fantech/i.test(displayName)) return "unknown-device.png";
   return "unknown-device.png";
 }
 
-/**
- * Base URL of the public R2 bucket that hosts device art (see
- * `public/devices/README.md` for the upload workflow). Kept as a single
- * constant so the bucket can move without touching every entry above.
- *
- * Served from a custom domain (img.openmouse.app) bound to the bucket
- * rather than its r2.dev URL — the r2.dev subdomain is unauthenticated,
- * shared, and rate-limited by Cloudflare, and isn't meant for production
- * traffic.
- */
 const DEVICE_IMAGE_BASE_URL = "https://img.openmouse.app/";
 
-/**
- * TEMPORARY local override — see `public/devices/README.md` →
- * `attackshark-r2.png`. The real Attack Shark R2 render is checked into the
- * repo (`public/devices/attackshark-r2.png`, served at `/devices/...`) so the
- * panel shows correct art while the R2 upload awaits. Once the file is up in
- * the bucket, delete this map, the file under `public/devices/`, and the
- * README note.
- */
 const LOCAL_OVERRIDES: Readonly<Record<string, string>> = {
   "attackshark-r2.png": "/devices/attackshark-r2.png",
   "delux-m800-mini.png": "/devices/delux-m800-mini.png",
@@ -221,19 +149,18 @@ const LOCAL_OVERRIDES: Readonly<Record<string, string>> = {
 
 export function deviceImage(device: HIDDevice | null | undefined, displayName = ""): string {
   const filename = resolveDeviceImageFilename(device, displayName);
-  return LOCAL_OVERRIDES[filename] ?? DEVICE_IMAGE_BASE_URL + filename;
+  const localPath = LOCAL_OVERRIDES[filename];
+  if (localPath) {
+    const base = import.meta.env.BASE_URL;
+    return `${base.replace(/\/$/, "")}${localPath}`;
+  }
+  return DEVICE_IMAGE_BASE_URL + filename;
 }
 
 export function deviceImageFilename(displayName = ""): string {
   return resolveDeviceImageFilename(null, displayName);
 }
 
-// Every filename here is checked against the R2 bucket directly (curl -o
-// /dev/null -w '%{http_code}') before landing on this list — several
-// filenames resolveDeviceImageFilename can return above 404 because the art
-// was never uploaded (attackshark-r2.png, mchose-a7-v2.png, atk-zero.png,
-// and the Microsoft IntelliMouse renders among them), which silently fails
-// on the device panel but breaks a showcase that's shown unconditionally.
 const SHOWCASE_DEVICE_FILENAMES: readonly string[] = [
   "logitech-g502-x-plus.png",
   "razer-viper-v3-pro.png",
