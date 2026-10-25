@@ -37,10 +37,6 @@ function computeDeviceImageFilename(displayName: string): string {
   if (/g502\s*x/i.test(displayName)) return "logitech-g502-x.png";
   if (/\bg502\b/i.test(displayName)) return "logitech-g502.png";
   if (/\bg703\b/i.test(displayName)) return "logitech-g703.png";
-  // The original G Pro X Superlight reports as "PRO X Wireless" over HID++,
-  // not "Superlight" — matched on the wireless name instead, reusing the
-  // Superlight 2c's render (close enough a shell). The `superlight` check a
-  // few lines down covers every other Superlight generation.
   if (/\bpro\s*x\s*wireless\b/i.test(displayName)) return "logitech-pro-x-superlight-2c.png";
   if (/mx\s*master\s*4/i.test(displayName)) return "unknown-device.png";
   if (/superstrike/i.test(displayName) && /x\s*3/i.test(displayName)) return "logitech-pro-x3-superstrike.png";
@@ -130,9 +126,10 @@ function computeDeviceImageFilename(displayName: string): string {
   if (/\bpro\s*intellimouse\b/i.test(displayName)) return "microsoft-pro-intellimouse.png";
   if (/\bintellimouse\b/i.test(displayName)) return "microsoft-classic-intellimouse.png";
   if (/\bpulsefire\s*haste\b/i.test(displayName)) return "hyperx-pulsefire-haste.png";
-  // Rival 3 Gen 2 wired artwork is checked into this fork while upstream art
-  // hosting is unavailable to the fork.
-  if (/\brival\s*3\s*gen\s*2\b/i.test(displayName)) return "steelseries-rival-3-gen-2-real.svg";
+  // Rival 3 Gen 2 artwork is served directly by SteelSeries. Using the
+  // image as a normal <img> avoids cross-origin nested-image restrictions
+  // that make an SVG wrapper render as an empty image.
+  if (/\brival\s*3\s*gen\s*2\b/i.test(displayName)) return "steelseries-rival-3-gen-2-direct.webp";
   if (/pulsar/i.test(displayName)) return "pulsar-x2-v2.png";
   return "unknown-device.png";
 }
@@ -144,13 +141,14 @@ const LOCAL_OVERRIDES: Readonly<Record<string, string>> = {
   "delux-m800-mini.png": "/devices/delux-m800-mini.png",
   "ipi-float-88.png": "/devices/ipi-float-88.png",
   "asus-rog-harpe-ace-aim-lab.png": "/devices/asus-rog-harpe-ace-aim-lab.png",
-  "steelseries-rival-3-gen-2-real.svg": "/devices/steelseries-rival-3-gen-2-real.svg",
+  "steelseries-rival-3-gen-2-direct.webp": "https://images.ctfassets.net/hmm5mo4qf4mf/5tCuR4QcYBghleNZoB2yFs/548dfe2f03e7d256050f6520011a729d/rival_3_gen_2_black_pdp_img_buy_01.png?fit=scale&fm=webp&q=90&w=1920",
 };
 
 export function deviceImage(device: HIDDevice | null | undefined, displayName = ""): string {
   const filename = resolveDeviceImageFilename(device, displayName);
   const localPath = LOCAL_OVERRIDES[filename];
   if (localPath) {
+    if (/^https?:\/\//i.test(localPath)) return localPath;
     const base = import.meta.env.BASE_URL;
     return `${base.replace(/\/$/, "")}${localPath}`;
   }
