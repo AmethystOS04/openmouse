@@ -1,23 +1,5 @@
 /**
  * Top-down product art for the persistent device panel.
- *
- * Resolved entirely by the device's own reported name (see
- * `resolveDeviceImageFilename`), not by VID:PID — a USB id is not always
- * unique to one product (see `SHARED_PID_KEYS`/`SHARED_PID_VENDOR_IDS`
- * below), and matching by name is the one identifier that's actually
- * specific to the physical product in every case, not just the shared ones.
- * The trade-off: a device's image can only resolve once its real name is
- * known (after a full connect and read), where a VID:PID map would have
- * resolved instantly from the raw `productName` string alone. Until then —
- * or if a model has no name rule yet — it shows the generic placeholder.
- *
- * Files are hosted in the `openmouse-devices` Cloudflare R2 bucket (public
- * access via its r2.dev URL, see `DEVICE_IMAGE_BASE_URL` below) rather than
- * committed to the repo, so only bare filenames appear below. A filename
- * whose file is missing in the bucket therefore fails at load rather than at
- * build time, so the panel drops the thumbnail on that error and keeps the
- * layout it had before any art existed. See `public/devices/README.md` for
- * how to upload new art.
  */
 
 const filenameCache = new Map<string, string>();
@@ -31,8 +13,7 @@ function resolveDeviceImageFilename(_device: HIDDevice | null | undefined, displ
 }
 
 function computeDeviceImageFilename(displayName: string): string {
-  // Lightspeed receivers are shared product IDs, so paired G502 X variants
-  // must use the friendly name read from the mouse itself.
+  // Preserve the existing device mappings.
   if (/g502\s*x\s*plus/i.test(displayName)) return "logitech-g502-x-plus.png";
   if (/g502\s*x/i.test(displayName)) return "logitech-g502-x.png";
   if (/\bg502\b/i.test(displayName)) return "logitech-g502.png";
@@ -126,9 +107,7 @@ function computeDeviceImageFilename(displayName: string): string {
   if (/\bpro\s*intellimouse\b/i.test(displayName)) return "microsoft-pro-intellimouse.png";
   if (/\bintellimouse\b/i.test(displayName)) return "microsoft-classic-intellimouse.png";
   if (/\bpulsefire\s*haste\b/i.test(displayName)) return "hyperx-pulsefire-haste.png";
-  // Rival 3 Gen 2 artwork is served directly by SteelSeries. Using the
-  // image as a normal <img> avoids cross-origin nested-image restrictions
-  // that make an SVG wrapper render as an empty image.
+  // Direct SteelSeries product image, so there is no SVG wrapper or nested image.
   if (/\brival\s*3\s*gen\s*2\b/i.test(displayName)) return "steelseries-rival-3-gen-2-direct.webp";
   if (/pulsar/i.test(displayName)) return "pulsar-x2-v2.png";
   return "unknown-device.png";
@@ -141,7 +120,7 @@ const LOCAL_OVERRIDES: Readonly<Record<string, string>> = {
   "delux-m800-mini.png": "/devices/delux-m800-mini.png",
   "ipi-float-88.png": "/devices/ipi-float-88.png",
   "asus-rog-harpe-ace-aim-lab.png": "/devices/asus-rog-harpe-ace-aim-lab.png",
-  "steelseries-rival-3-gen-2-direct.webp": "https://images.ctfassets.net/hmm5mo4qf4mf/5tCuR4QcYBghleNZoB2yFs/548dfe2f03e7d256050f6520011a729d/rival_3_gen_2_black_pdp_img_buy_01.png?fit=scale&fm=webp&q=90&w=1920",
+  "steelseries-rival-3-gen-2-direct.webp": "https://images.ctfassets.net/hmm5mo4qf4mf/6JeTt3A36dChpcazQKyHbB/ad71640570dea931c42f1114b92d9993/rival_3_gen_2_black_pdp_img_buy_02.png?fm=webp&q=90&fit=scale&w=1200",
 };
 
 export function deviceImage(device: HIDDevice | null | undefined, displayName = ""): string {
@@ -181,5 +160,5 @@ export function showcaseDeviceImageUrls(): readonly string[] {
 export const UNKNOWN_DEVICE_FILENAME = "unknown-device.png";
 
 export function isUnknownDevice(device: HIDDevice | null | undefined, displayName = ""): boolean {
-  return resolveDeviceImageFilename(device, displayName) === UNKNOWN_DEVICE_FILENAME;
+  return resolveDeviceImageFilename(null, displayName) === UNKNOWN_DEVICE_FILENAME;
 }
