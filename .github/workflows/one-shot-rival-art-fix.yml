@@ -1,0 +1,39 @@
+name: One-shot Rival 3 Gen 2 artwork fix
+
+on:
+  push:
+    branches:
+      - feat/rival3-gen2-rgb
+    paths:
+      - public/devices/steelseries-rival-3-gen-2-real.svg
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Switch the artwork mapping to the cache-busted filename
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("src/shared/device-images.ts")
+          s = p.read_text()
+          old = "steelseries-rival-3-gen-2.svg"
+          new = "steelseries-rival-3-gen-2-real.svg"
+          if old not in s:
+              raise SystemExit("old artwork filename not found")
+          p.write_text(s.replace(old, new))
+          PY
+
+      - name: Commit the mapping and remove this one-shot workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/workflows/one-shot-rival-art-fix.yml
+          git add src/shared/device-images.ts .github/workflows/one-shot-rival-art-fix.yml
+          git commit -m "fix: use cache-busted Rival 3 Gen 2 artwork"
+          git push
