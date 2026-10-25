@@ -159,6 +159,6 @@ export function showcaseDeviceImageUrls(): readonly string[] {
 
 export const UNKNOWN_DEVICE_FILENAME = "unknown-device.png";
 
-export function isUnknownDevice(device: HIDDevice | null | undefined, displayName = ""): boolean {
+export function isUnknownDevice(_device: HIDDevice | null | undefined, displayName = ""): boolean {
   return resolveDeviceImageFilename(null, displayName) === UNKNOWN_DEVICE_FILENAME;
 }
